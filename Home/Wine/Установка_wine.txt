@@ -1,0 +1,45 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-20T23:19:16+03:00
+
+====== Установка wine в Ubuntu 18.04 ======
+Создан Пятница 20 декабря 2019
+
+
+
+$ sudo dpkg --add-architecture i386
+$ wget -nc https://dl.winehq.org/wine-builds/Release.key
+$ wget -nc https://dl.winehq.org/wine-builds/winehq.key
+$ sudo -i
+$ apt-key add Release.key
+$ apt-key add winehq.key
+
+# $ add-apt-repository "deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main" 
+# при выполнении apt update выдает ошибку 
+# Ошб:16 https://dl.winehq.org/wine-builds/ubuntu/dists/xenial/main/binary-amd64 xenial Release
+#  404  Not Found
+# E: Репозиторий «https://dl.winehq.org/wine-builds/ubuntu/dists/xenial/main/binary-amd64 xenial Release» не содержит файла Release.
+# если добавить репозиторий следующей командой, то ошибки нет
+$ apt-add-repository "https://dl.winehq.org/wine-builds/ubuntu" # нужно перепроверить!!!
+
+$ apt update
+$ apt install --install-recommends winehq-stable
+$ apt install cabextract
+
+===== Создание 32-битного префикса WINE в Ubuntu 18.04 =====
+--------------------
+WINEPREFIX=~/.wine32 WINEARCH=win32 wineboot
+
+Задать значение переменной окружения WINEPREFIX в конце файла ~/.profile
+export WINEPREFIX="${HOME}/.wine32"
+
+===== Установка winetriks =====
+
+см.: https://github.com/Winetricks/winetricks
+
+===== Установка шрифтов =====
+
+winetricks -> Установить программу, OK, Установить шрифт, выбрать требуемый шрифт и нажать OK.
+
+NB! После apt update запускать winecfg!
+

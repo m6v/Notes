@@ -1,0 +1,109 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-23T11:03:30+03:00
+
+====== Установка wine 3.0.2 на Astra Linux Special Edition Смоленск 1.6 ======
+Создан Четверг 23 Январь 2020
+
+см.: [[https://wiki.astralinux.ru/pages/viewpage.action?pageId=27362502|Установка wine на Astra Linux Special Edition Смоленск 1.6]]
+
+Специально для 1.6 подготовлен пакет wine с интегрированным mono и gecko, не требующий установки пакетов с 32 битными библиотеками (кроме установки пакета ia32-libs). При установке описанного в данной статье пакета будет установлен 32-битный пакет ia32-libs, установка других 32-битных пакетов установлены не требуется.
+
+===== Установка wine =====
+Загрузить wine с помощью браузера по ссылке:  https://nas01.astralinux.ru:5001/sharing/4iTWguZ35
+
+Контрольная сумма:
+
+{{{code: lang="sh" linenumbers="False"
+gostsum wine-installer.run
+}}}
+
+''096efedda7344696f358f358b7bddc767d24da980607ede2d64612748bfb905a wine-installer.run''
+
+Затем выполнить:
+
+{{{code: lang="sh" linenumbers="False"
+chmod +x wine-installer.run
+}}}
+
+И установить wine:
+{{{code: lang="sh" linenumbers="False"
+sudo ./wine-installer.run
+}}}
+
+После установки выполнить:
+{{{code: lang="sh" linenumbers="False"
+DISPLAY=:0 /opt/wine-stable/bin/winecfg
+}}}
+
+для создания домашнего каталога и установки необходимых библиотек.
+Появившиеся предупреждения проигнорировать, в открывшемся окне выбрать "Установки по умолчанию"
+
+===== Установка дополнительных библиотек =====
+Для установки доп. библиотек существует удобный сценарий winetricks. Для работы сценария нужны дополнительные пакеты, отсутствующие в составе дистрибутива Смоленска.
+
+Для их установки выполнить следующие команды:
+{{{code: lang="sh" linenumbers="False"
+apt install ca-certificates
+wget https://mirror.yandex.ru/astra/current/orel/repository/pool/main/libm/libmspack/libmspack0_0.5-1%2Bdeb9u2_amd64.deb
+wget https://mirror.yandex.ru/astra/current/orel/repository/pool/main/c/cabextract/cabextract_1.6-1_amd64.deb
+sudo dpkg -i libmspack0_0.5-1+deb9u2_amd64.deb cabextract_1.6-1_amd64.deb
+sudo apt install zenity
+}}}
+
+Далее, скачать  winetricks
+{{{code: lang="sh" linenumbers="False"
+wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
+}}}
+
+Сделать его исполняемым
+{{{code: lang="sh" linenumbers="False"
+chmod +x winetricks
+}}}
+
+Скопировать в /usr/bin
+{{{code: lang="sh" linenumbers="False"
+sudo cp winetricks /usr/bin
+}}}
+
+Настроить линки на wine
+{{{code: lang="sh" linenumbers="False"
+sudo mkdir /usr/lib/wine
+sudo ln -s /opt/wine-stable/bin/wineserver /usr/lib/wine/wineserver
+sudo ln -s /opt/wine-stable/bin/wine /usr/bin/wine
+}}}
+
+Запустить winetricks командой
+{{{code: lang="sh" linenumbers="False"
+winetricks
+}}}
+
+В появившемся окне выбрать: Выберите путь wine
+
+{{./pasted_image.png}}
+
+И нажать ОК, далее "Установить библиотеку DLL или компонент Windows"
+
+{{./pasted_image001.png}}
+
+После выбрать необходимый компонент из списка и нажать ОК
+
+{{./pasted_image002.png}}
+
+Требуемый компонент будет загружен и установлен в текущий профиль.
+
+Краткое описание пунктов меню winetricks для текущего профиля:
+
+| Пункт меню                                        | Описание                                                                           |
+|:--------------------------------------------------|:-----------------------------------------------------------------------------------|
+| Запустить regedit                                 | Редактор реестра wine                                                              |
+| Запустить taskmgr                                 | Диспетчер задач wine                                                               |
+| Запустить uninstaller                             | Установка или удаление программ (Можно установить приложение в формате .msi)       |
+| Запустить winecfg                                 | Утилита настроек wine                                                              |
+| Запустить графический терминал                    | cmd.exe                                                                            |
+| Поменять настройки                                | Тонкая настройка текущего профиля                                                  |
+| Проводник файлов                                  | Проводник файлов explorer                                                          |
+| Удалить ВСЕ ПРИЛОЖЕНИЯ И ДАННЫЕ В ЭТОМ WINEPREFIX | Стирает выбранный профиль wine, со всеми настройками и установленными приложениями |
+| Установить библиотеку DLL или компонент Windows   | Установка дополнительных библиотек и компонентов windows                           |
+| Установить шрифт                                  | Установка шрифтов от Microsoft                                                     |
+

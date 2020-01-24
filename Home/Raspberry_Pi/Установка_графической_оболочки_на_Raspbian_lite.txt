@@ -1,0 +1,86 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-16T09:37:34+03:00
+
+====== Установка графической оболочки на Raspbian lite ======
+Создан Четверг 16 Январь 2020
+
+{{{code: lang="sh" linenumbers="False"
+sudo apt install xfce4 xfce4-terminal
+sudo apt install lightdm
+sudo reboot
+}}}
+
+
+===== Raspbian Stretch Lite with XFCE4, set automatic login =====
+
+To set up XFCE4 Desktop I use:
+
+{{{code: lang="sh" linenumbers="False"
+#update repos
+sudo apt-get update -y
+
+#update system
+sudo apt-get upgrade -y
+
+#upgrade os
+sudo apt-get dist-upgrade -y
+
+#clean
+sudo apt-get clean -y
+
+#install xorg server. this is basic stuff if I want GUI
+sudo apt-get install --no-install-recommends xserver-xorg -y
+
+#startup, reboot, power off is an init. this is necessary
+sudo apt-get install --no-install-recommends xinit -y
+
+#install xfce stuff. xfwm is also needed but the package is already included in dependencies  of xfce
+sudo apt-get install xfce4 xfce4-terminal -y
+}}}
+
+Now I lauch:
+
+{{{code: lang="sh" linenumbers="False"
+sudo raspi-config
+}}}
+
+select [Boot Options]
+
+Select [B1 Desktop / CLI]
+
+Select [B4 Desktop Autologin / CLI]
+
+Restart:
+
+{{{code: lang="sh" linenumbers="False"
+sudo reboot
+}}}
+
+Another way is:
+
+{{{code: lang="sh" linenumbers="False"
+sudo su
+apt-get update -y && apt-get install git -y
+cd
+git clone https://github.com/catonrug/rpi-stretch.git
+cd rpi-stretch
+chmod +x lite-xfce.sh
+time ./lite-xfce.sh
+}}}
+
+This will take 20 minutes to complete.
+
+After launching operating system in need to configure:
+turn of windows shadows
+authorize Google Chrome
+download Keepass database file
+add to the panel Geany, Chromium, KeePass, LXMusic, Kodi
+install ssh key to work with github
+set up current region and keyboard
+
+
+см.:
+[[https://www.element14.com/community/community/raspberry-pi/raspberrypi2/blog/2015/04/08/setting-up-an-xfce-desktop-environment-on-pi|Setting up an Xfce Desktop Environment on Pi]]
+[[https://taillieu.info/index.php/internet-of-things/raspberrypi/389-raspbian-lite-with-rpd-lxde-xfce-mate-i3-openbox-x11-gui|Raspbian Lite with RPD/LXDE/XFCE/MATE/i3/Openbox/X11 GUI]]
+[[https://catonrug.blogspot.com/2017/09/raspbian-stretch-lite-xfce4.html|Raspbian with XFCE]]

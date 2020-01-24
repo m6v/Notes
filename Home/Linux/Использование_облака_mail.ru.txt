@@ -1,0 +1,69 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-21T15:37:27+03:00
+
+====== Использование облака mail.ru ======
+Создан Вторник 21 Январь 2020
+
+[[https://gist.github.com/starlinq/4ef2ef4d348c1b81913a2a201f7ff09e|Подключение к Cloud.mail.ru с помощью WebDAV эмулятора в Убунту 18.04]]
+[[https://gist.github.com/yar229/4b702af114503546be1fe221bb098f27|Russian FAQ]]
+
+1) скачать с гитхаба https://github.com/yar229/WebDavMailRuCloud бинарники WebDavMailRuCloud (кнопка "Download latest binares")
+2) запустить mono wdmrc.exe -p 8001 (где 8001 - произвольный порт)
+3) в thunar'е открыть адрес dav://127.0.0.1:8001
+4) ввести логин (например, yourlogin@mail.ru) и пароль
+
+NB! Офисные файлы напрямую с облака не открываются!
+
+Для автоматизации монтирования:
+1) установить davfs
+{{{code: lang="sh" linenumbers="False"
+sudo apt install davfs2
+}}}
+
+2) добавить пользователя в davfs2
+{{{code: lang="sh" linenumbers="False"
+sudo usermod -a -G davfs2 maksimov
+}}}
+
+3) создать точку монтирования
+{{{code: lang="sh" linenumbers="False"
+mkdir /media/mail.ru
+}}}
+
+4) записать в автозапуск
+''/usr/bin/mono /opt/WebDAVCloudMailRU/wdmrc.exe -p 8001''
+, где 8001 - произвольный порт
+
+{{./pasted_image.png}}
+
+5) в файл ''/etc/davfs2/secrets'' добавить строку
+''/media/mail.ru           m6v@mail.ru    password''
+6) в файл ''/etc/fstab'' добавить строку
+''127.0.0.1:8001 /media/mail.ru davfs user,users,rw,noauto,_netdev 0 0''
+
+Для запуска с помощью systemd создать файл ''/etc/systemd/system/mail.ru.service'' следующего содержания
+
+'''
+[Unit]
+Description=Cloud from mail.ru
+Requires=network.target
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/bin/mono /opt/WebDAVCloudMailRU/wdmrc.exe -p 8001
+
+[Install]
+Wanted=multi-user.target
+'''
+
+
+Разрешить стартовать во время запуска системы
+
+{{{code: lang="sh" linenumbers="False"
+systemctl enable mail.ru.service
+}}}
+
+

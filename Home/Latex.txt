@@ -1,0 +1,93 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-25T09:26:50+03:00
+
+====== Latex ======
+Создан Среда 25 Декабрь 2019
+
+
+ [[https://wiki.debian.org/Latex|This page describes how to set up a LaTeX distribution on Debian]]
+
+===== Установка xetex =====
+
+{{{code: lang="sh" linenumbers="False"
+$ sudo apt install texlive-xetex # 1422МБ после установки (вместе с texlive)
+$ sudo apt install texlive-lang-cyrillic # 40,3МБ после установки
+# apt install texlive-doc-ru # опционально
+# apt install scalable-cyrfonts-tex # опционально
+}}}
+
+Создаются каталоги:
+/usr/local/share/texmf
+/usr/share/tcltk
+/usr/share/tex-common
+/usr/share/texlive
+/usr/share/texmf
+
+{{{code: lang="sh" linenumbers="False"
+$ tlmgr conf
+}}}
+
+'''
+(running on Debian, switching to user mode!)
+=========================== version information ==========================
+tlmgr revision 41476 (2016-06-18 02:45:25 +0200)
+tlmgr using installation: /usr/share/texlive
+TeX Live (http://tug.org/texlive) version 2016
+
+==================== executables found by searching PATH =================
+PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+kpsewhich: /usr/bin/kpsewhich
+updmap: /usr/bin/updmap
+fmtutil: /usr/bin/fmtutil
+tlmgr: /usr/bin/tlmgr
+tex: /usr/bin/tex
+pdftex: /usr/bin/pdftex
+mktexpk: /usr/bin/mktexpk
+dvips: /usr/bin/dvips
+dvipdfmx: /usr/bin/dvipdfmx
+=========================== active config files ==========================
+texmf.cnf: /etc/texmf/web2c/texmf.cnf
+texmf.cnf: /usr/share/texmf/web2c/texmf.cnf
+texmf.cnf: /usr/share/texlive/texmf-dist/web2c/texmf.cnf
+updmap.cfg: /usr/share/texmf/web2c/updmap.cfg
+updmap.cfg: /usr/share/texlive/texmf-dist/web2c/updmap.cfg
+fmtutil.cnf: /usr/share/texmf/web2c/fmtutil.cnf
+config.ps: /usr/share/texlive/texmf-dist/dvips/config/config.ps
+mktex.cnf: /etc/texmf/web2c/mktex.cnf
+pdftexconfig.tex: /var/lib/texmf/tex/generic/config/pdftexconfig.tex
+============================= font map files =============================
+psfonts.map: /var/lib/texmf/fonts/map/dvips/updmap/psfonts.map
+pdftex.map: /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
+ps2pk.map: /var/lib/texmf/fonts/map/dvips/updmap/ps2pk.map
+kanjix.map: /var/lib/texmf/fonts/map/dvipdfmx/updmap/kanjix.map
+=========================== kpathsea variables ===========================
+TEXMFMAIN=/usr/share/texlive/texmf-dist
+TEXMFDIST=/usr/share/texlive/texmf-dist
+TEXMFLOCAL=/usr/local/share/texmf
+TEXMFSYSVAR=/var/lib/texmf
+TEXMFSYSCONFIG=/etc/texmf
+TEXMFVAR=/root/.texlive2016/texmf-var
+TEXMFCONFIG=/root/.texlive2016/texmf-config
+TEXMFHOME=/root/texmf
+VARTEXFONTS=/tmp/texfonts
+TEXMF={/root/.texlive2016/texmf-config,/root/.texlive2016/texmf-var,/root/texmf,/etc/texmf,!!/var/lib/texmf,!!/usr/local/share/texmf,!!/usr/share/texmf,!!/usr/share/texlive/texmf-dist}
+SYSTEXMF=/var/lib/texmf:/usr/local/share/texmf:/usr/share/texmf:/usr/share/texlive/texmf-dist
+TEXMFDBS={!!/var/lib/texmf,!!/usr/local/share/texmf,!!/usr/share/texmf,!!/usr/share/texlive/texmf-dist}
+WEB2C={/root/.texlive2016/texmf-config,/root/.texlive2016/texmf-var,/root/texmf,/etc/texmf,!!/var/lib/texmf,!!/usr/local/share/texmf,!!/usr/share/texmf,!!/usr/share/texlive/texmf-dist}/web2c
+TEXPSHEADERS=.:{/root/.texlive2016/texmf-config,/root/.texlive2016/texmf-var,/root/texmf,/etc/texmf,!!/var/lib/texmf,!!/usr/local/share/texmf,!!/usr/share/texmf,!!/usr/share/texlive/texmf-dist}/{dvips,fonts/{enc,type1,type42,type3}}//
+TEXCONFIG={/root/.texlive2016/texmf-config,/root/.texlive2016/texmf-var,/root/texmf,/etc/texmf,!!/var/lib/texmf,!!/usr/local/share/texmf,!!/usr/share/texmf,!!/usr/share/texlive/texmf-dist}/dvips//
+ENCFONTS=.:{/root/.texlive2016/texmf-config,/root/.texlive2016/texmf-var,/root/texmf,/etc/texmf,!!/var/lib/texmf,!!/usr/local/share/texmf,!!/usr/share/texmf,!!/usr/share/texlive/texmf-dist}/fonts/enc//
+TEXFONTMAPS=.:{/root/.texlive2016/texmf-config,/root/.texlive2016/texmf-var,/root/texmf,/etc/texmf,!!/var/lib/texmf,!!/usr/local/share/texmf,!!/usr/share/texmf,!!/usr/share/texlive/texmf-dist}/fonts/map/{kpsewhich,pdftex,dvips,}//
+==== kpathsea variables from environment only (ok if no output here) ====
+'''
+
+каталог [[/usr/share/texlive/texmf-dist]] видимо зависит от дистрибутива TeX (в данном случае это texlive)
+каталог [[/usr/share/texmf]] зарезервирован для дистрибутивно-нейтральных сборок расширений TeX
+
+===== Ссылки =====
+
+[[./Добавление пакетов в TeX Live.pdf|Добавление пакетов в TeX Live]]
+[[./Абзацы и строки.pdf|Абзацы и строки]]
+[[./Настройка заголовков в titlesec.pdf|Настройка заголовков в titlesec]]
+[[./Оформление отчета о НИР в LaTeX.pdf|Оформление отчета о НИР в LaTeX]]

@@ -1,0 +1,111 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-23T11:22:39+03:00
+
+====== SSH-доступ на сервер за NAT-ом ======
+Создан Четверг 23 Январь 2020
+
+Дано: сервер с приватным IP-адресом, недоступный для обращений из Интернета — например, расположенный в локальной сети за NAT-ом.
+Задача: предоставить к серверу SSH-доступ из внешнего мира.
+Решение: постоянно установленная исходящая SSH-сессия с приватного сервера на публичный, перенаправляющая порт с публичного сервера на приватный.
+Необходимое условие: во внешнем мире нам потребуется промежуточный SSH-сервер с публичным IP.
+
+===== Настраиваем приватный сервер =====
+Общая схема:
+* создаём псевдопользователя;
+* генерируем пару SSH-ключей;
+* публичный ключ копируем на внешний сервер;
+* параметры подключения сохраняем в ~/.ssh/config, чтобы не указывать их каждый раз в командной строке.
+
+Команды (здесь и далее выполняются от имени суперпользователя):
+
+{{{code: lang="sh" linenumbers="False"
+$ useradd -s /bin/true -c Pseudo_user_for_ssh_rtunnel -m -r rtunnel
+$ sudo -u rtunnel -H ssh-keygen
+$ scp ~rtunnel/.ssh/id_rsa.pub central-server:/tmp/
+}}}
+
+
+EDIT (здесь и далее — создаем, редактируем, сохраняем файл) 
+
+{{{code: lang="sh" linenumbers="False"
+$ nano ~rtunnel/.ssh/config
+}}}
+
+'''
+Host rtunnel
+	  Hostname publuc-server.example.org
+	  User rtunnel
+	  RemoteForward 2222 127.0.0.1:22
+	  ServerAliveInterval 30
+	  ServerAliveCountMax 5
+	  ExitOnForwardFailure yes
+'''
+
+
+===== Настраиваем публичный сервер =====
+Общая схема:
+* создаём псевдопользователя, под именем которого будет подключаться SSH-клиент с приватного сервера;
+* useradd вызываем с ключом «-r», который означает «Create a system account» (Создать системную учётную запись);
+* благодаря этому его имя, например, не появится в списке пользователей для входа в систему в графическом режиме.
+
+Команды:
+{{{code: lang="sh" linenumbers="False"
+$ useradd -s /bin/true -c Pseudo_user_for_ssh_rtunnel -m -r rtunnel
+$ mkdir ~rtunnel/.ssh
+$ cat /tmp/id_rsa.pub >> ~rtunnel/.ssh/authorized_keys
+$ chown -R rtunnel ~rtunnel
+}}}
+
+
+===== Проверяем =====
+
+==== На приватном сервере ====
+{{{code: lang="sh" linenumbers="False"
+$ sudo -u rtunnel -H ssh -N rtunnel
+}}}
+
+* ключ «-N» означает «Do not execute a remote command. This is useful for just forwarding ports» (Не выполнять никаких команд. Полезно для проброса портов без дополнительных действий);
+* этот режим можно задать только в командной строке, директивы в ~/.ssh/config для него не существует;
+* внешне SSH после успешного подключения будет висеть, не выполняя никаких действий.
+
+==== На публичном сервере ====
+{{{code: lang="sh" linenumbers="False"
+$ netstat -ntlp | grep 2222
+$ ssh -p2222 127.0.0.1
+}}}
+
+
+===== Настраиваем автозапуск на приватном сервере =====
+В качестве системы инициализации на приватном сервере должен использоваться Systemd (для большинства современных дистрибутивов это так)
+
+{{{code: lang="sh" linenumbers="False"
+nano /etc/systemd/system/rtunnel.service
+}}}
+
+'''
+[Unit]
+Description = SSH Tunnel to local over tunnel to remote
+After = network-online.target
+Wants = network-online.target
+#
+[Service]
+User = rtunnel
+Type = simple
+ExecStart = /usr/bin/ssh -N rtunnel
+Restart = always
+RestartSec = 30s
+#
+[Install]
+WantedBy = multi-user.target
+'''
+
+
+Регистрируем, включаем, запускаем, проверяем:
+{{{code: lang="sh" linenumbers="False"
+$ systemctl daemon-reload
+$ systemctl enable rtunnel
+$ systemctl start rtunnel
+$ systemctl status rtunnel
+}}}
+

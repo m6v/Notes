@@ -1,0 +1,122 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-23T12:05:46+03:00
+
+====== An update on CalDAV and CardDAV with Radicale ======
+Создан Четверг 23 Январь 2020
+
+This is a quick update to a previous post where I explained how to self-host your calendar and contacts using the Radicale CalDAV and CardDAV server, and how to access them on Android devices with DAVdroid.
+
+Three years later, I am still using this setup. I only use my Android phone to access the calendar and contacts, so the Radicale server is essentially a way to back the contacts and calendars up; although I have also tried accessing them, e.g., with Evolution. Over these three years, DAVdroid has evolved and gotten a bit more user-friendly and stable, though I have had a few problems (e.g., duplicated calendar events). Radicale has evolved too, I'm currently at version 1.1.1, which is the one provided by Debian even though it is really outdated. (Also, as of this writing, Radicale is not available in the Debian testing repos, see here, but it can be installed from Debian stable.)
+
+The main change that I did is on the server. In the old guide, I explained how to set up Radicale so that it listens on port 5232, manages authentication and encryption, and DAVdroid connects to it directly. I have changed this setup so that DAVdroid now connects to Apache2, which manages authentication and encryption, and talks to Radicale using WSGI. This has a number of advantages:
+
+You can encrypt the connection with SSL managed by Apache, e.g., using Let's Encrypt, without self-signed certificates or other ad-hoc setup; and you don't need to trust Radicale to do the encryption correctly.
+The server listens on the standard HTTPS port (443) rather than the custom Radicale port (5232) so the connections aren't blocked on unfriendly networks.
+You can use vhosts, e.g., to host it on a subdomain.
+Authentication is managed by Apache, not Radicale. This is somewhat reassuring: even if Radicale has a massive security flaw, only users that correctly authenticated with Apache can talk to it at all.
+The most important point: with the old setup, Radicale would inexplicably hang every now and then, presumably when the phone disconnected messily from it. (I think it is this bug). With the new setup, this does not happen. (Maybe the bug has been fixed in more recent Radicale versions anyway, I don't know.)
+Of course, the downside of this new setup is that you need Apache just to route requests to Radicale. As I needed Apache for other purposes, though, I didn't mind.
+
+The setup
+I haven't documented this setup while I did it, so here a hopefully complete description of what I currently have.
+
+You need to install Apache, and enable the SSL and WSGI and auth_basic modules (run as root a2enmod ssl and a2enmod wsgi and a2enmod auth_basic and service apache2 restart). Of course, basic HTTP authentication may sound insecure, but we will only be doing it over HTTPS.
+
+You should set up Let's Encrypt certificates (e.g., with certbot), something I mentioned in this previous guide.
+
+Of course you need to install radicale. We are going to put all radicale-related stuff in /srv/radicale, but of course this can be changed. The files in this directory should be readable and writable by the Web server.
+
+You then need to create a file in /etc/apache2/sites-enabled whose contents look as follows:
+
+'''
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+        ServerName dav.example.com
+
+        ServerAdmin youremail@example.com
+        DocumentRoot /var/www/html/
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        WSGIDaemonProcess radicale user=www-data group=www-data threads=1
+        WSGIScriptAlias / /srv/radicale/radicale.wsgi
+
+        <Directory /srv/radicale/>
+            WSGIProcessGroup radicale
+            WSGIApplicationGroup %{GLOBAL}
+            AllowOverride None
+            AuthType basic
+            AuthName "dav.example.com"
+            AuthUserFile /srv/radicale/passwd
+            Require user youruser
+            SSLRequireSSL
+        </Directory>
+
+SSLCertificateFile /etc/letsencrypt/live/example.com/fullchain.pem
+SSLCertificateKeyFile /etc/letsencrypt/live/example.com/privkey.pem
+Include /etc/letsencrypt/options-ssl-apache.conf
+</VirtualHost>
+</IfModule>
+'''
+
+
+The file /srv/radicale/passwd contains the username and passwords of who can access the server, managed as usual with the htpasswd utility. The file /srv/radicale/radicale.wsgi contains the invocation to run Radicale and points to the config file, as follows:
+
+'''
+import radicale
+configuration = radicale.config.read(["/srv/radicale/config"])
+radicale.log.start()
+application = radicale.Application()
+'''
+
+
+To create the config file, you can, e.g., write the following in [[/srv/radicale/config]]
+
+'''
+[encoding]
+request = utf-8
+stock = utf-8
+
+[rights]
+type = owner_only
+
+[storage]
+type = filesystem
+filesystem_folder = /srv/radicale/collections
+
+[logging]
+config = /srv/radicale/logging
+'''
+
+
+In this file, /srv/radicale/collections contains the Radicale collections as in the old guide. The file /srv/radicale/logging contains the radicale logging configuration. Here is mine:
+
+'''
+# inspired by https://github.com/Kozea/Radicale/issues/266#issuecomment-121170414
+[loggers]
+keys = root
+
+[handlers]
+keys = file
+
+[formatters]
+keys = full
+
+[logger_root]
+level = DEBUG
+handlers = file
+
+[handler_file]
+args = ('/srv/radicale/logs/radicale.log','a',32768,3)
+level = INFO
+class = handlers.RotatingFileHandler
+formatter = full
+
+[formatter_full]
+format = %(asctime)s - %(levelname)s: %(message)s
+'''
+
+
+In the above, /srv/radicale/logs is where you want radicale to write its log files. You probably need to specify it manually, because radicale is run by the Web server, which may not have the right to log, e.g., in /var/log/radicale as the default configuration would do.

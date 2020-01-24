@@ -1,0 +1,104 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-26T10:40:39+03:00
+
+====== Добавление пакетов в TeX Live ======
+Создан Четверг 26 Декабрь 2019
+
+Before using tlmgr in user mode, you have to set up the user tree with the init-usertree action. This creates $HOME/texmf/web2c and $HOME/texmf/tlpkg/tlpobj, and a minimal usertree/tlpkg/texlive.tlpdb. At that point, you can tell tlmgr to do the (supported) actions by adding the --usermode command line option.
+
+{{{code: lang="sh" linenumbers="False"
+$ sudo apt-get install xzdec
+$ tlmgr --version
+}}}
+
+
+'''
+(running on Debian, switching to user mode!)
+tlmgr revision 41476 (2016-06-18 02:45:25 +0200)
+tlmgr using installation: /usr/share/texlive
+TeX Live (http://tug.org/texlive) version 2016
+'''
+
+
+WARNING: tlmgr in Debian runs always in user mode
+
+Initializing the user tree
+The first thing to be done is initializing the user tree. By default, the user tree that is to be handled will be TEXMFHOME, which amounts to ~/texmf. If you want to change that, all the following commands also take an additional option --usertree to specify the tree.
+tlmgr init-usertree
+which sets up the initial empty TeX Live database and creates necessary files. In case there is already a file in TEXMFHOME/tlpkg/texlive.tlpdb the command will bail out. Other directories generated are TEXMFHOME/web2c and TEXMFHOME/tlpkg/tlpobj.
+
+The first thing to call is
+# инициализация менеджера пакетов
+tlmgr init-usertree
+'''
+(running on Debian, switching to user mode!)
+Cannot determine type of tlpdb from /home/maksimov/texmf!
+'''
+
+tlmgr update --self
+'''
+(running on Debian, switching to user mode!)
+tlmgr: package repository http://mirror.macomnet.net/pub/CTAN/systems/texlive/tlnet (verified)
+tlmgr: no self-updates for tlmgr available.
+'''
+
+tlmgr update --all
+'''
+(running on Debian, switching to user mode!)
+tlmgr: package repository http://mirrors.mi.ras.ru/CTAN/systems/texlive/tlnet (verified)
+tlmgr: no updates available
+'''
+
+
+===== Adding a new package to a latex install on linux =====
+
+If you want to install a custom TeX package that is not already in Debian's repositories, take a look at CTAN's web site or TeX Catalogue Online.
+
+Download the package and extract it with tar -xvf foo.tar.gz.
+
+Enter the directory, if you see foo.ins, run it trough LaTeX
+
+{{{code: lang="sh" linenumbers="False"
+$ latex foo.ins
+}}}
+
+
+This generates foo.sty. Now you have to copy it to the system LaTeX tree or your personal tree. After installation, you can use the new package by inserting \usepackage{foo} in the beginning of the document.
+
+==== User install ====
+
+This method creates a personal texmf tree to your home folder. The files are installed only to the original user.
+
+Create the directory structure:
+
+{{{code: lang="sh" linenumbers="False"
+$ mkdir -p ~/texmf/tex/latex/foo
+}}}
+
+
+It's a good idea to create separate subdirectories in latex for different custom packages. Copy the newly generated foo.tex to your tree. After this, update the LaTeX package cache with
+
+{{{code: lang="sh" linenumbers="False"
+$ texhash ~/texmf
+}}}
+
+
+==== System install ====
+
+This method installs the package in the LaTeX system tree. The new package is available to all users.
+
+Create a new directory as root
+
+{{{code: lang="sh" linenumbers="False"
+$ mkdir /usr/share/texmf/tex/latex/foo
+}}}
+
+
+Copy the new LaTeX package foo.tex to the new folder, and update the LaTeX package cache
+
+{{{code: lang="sh" linenumbers="False"
+$ texhash
+}}}
+
+

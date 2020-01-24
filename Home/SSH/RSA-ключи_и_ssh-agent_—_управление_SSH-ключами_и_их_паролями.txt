@@ -1,0 +1,537 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-16T18:31:24+03:00
+
+====== RSA-ключи и ssh-agent — управление SSH-ключами и их паролями ======
+Создан Четверг 16 января 2020
+
+===== ssh-agent =====
+
+ssh-agent предназначен для управления SSH-ключами пользователя и их паролями, что бы не вводить пароль к ключу каждый раз при использовании.
+
+==== Запуск агента ====
+
+{{{code: lang="sh" linenumbers="False"
+ssh-agent
+}}}
+
+
+'''
+SSH_AUTH_SOCK=/tmp/ssh-dMDE5mED77tM/agent.436347; export SSH_AUTH_SOCK;
+SSH_AGENT_PID=436348; export SSH_AGENT_PID;
+echo Agent pid 436348;
+'''
+
+
+Для работы клиентов важны переменные, которые задаются агентом:
+
+	SSH_AGENT_PID: с PID процесса с ssh-agent, которая будет использоваться при, например, ssh-agent -k для остановки агента
+	SSH_AUTH_SOCK: указывает на путь к unix-сокету, который будут использовать другие процессы для коммуникации с ssh-agent
+
+Что бы запустить агента без вывода всей этой информации — используем:
+
+{{{code: lang="sh" linenumbers="False"
+eval $(ssh-agent) > /dev/null
+}}}
+
+
+==== Примеры ====
+
+Рассмотрим базовые примеры использования ssh-agent.
+
+=== Создание ключа ===
+
+Генерируем ключ:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-keygen -t rsa -b 2048 -f /home/setevoy/.ssh/test-key -C "Testing key" -P pass
+}}}
+
+
+'''
+Generating public/private rsa key pair.
+Your identification has been saved in /home/setevoy/.ssh/test-key.
+Your public key has been saved in /home/setevoy/.ssh/test-key.pub.
+The key fingerprint is:
+SHA256:pTyrGtk1hnNHB6b8ilp5jRe1+K4KrLHg50yUGilApLY Testing key
+The key's randomart image is:
++---[RSA 2048]----+
+|.o        o      |
+|o      . o .     |
+|o.      o o o    |
+|o .. . o = + .   |
+|.Eo o o S = .    |
+| . + + B O o     |
+|  o = B = o .    |
+| . +.B + . .     |
+|  .oB.. .....    |
++----[SHA256]-----+
+'''
+
+
+Опции тут:
+
+	-t: тип RSA
+	-b: длина ключа в битах (по-умолчанию 3072 для RSA)
+	-f: путь к файлу ключа (по-умолчанию будет ~/.ssh/id_rsa)
+	-C: комментарий к ключу (по-умолчанию будет username@hostname)
+	-P: пароль для доступа к ключу
+
+=== Проверка пароля ===
+
+Что бы проверить пароль ключа — используем -f для указания ключа, и -y для вывода информации о ключе, поэтому запросит пароль:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-keygen -y -f /home/setevoy/.ssh/test-key
+}}}
+
+
+'''
+Enter passphrase:
+ssh-rsa AAAAB***gud2vedL/V Testing key
+'''
+
+
+=== Смена пароля ===
+
+Что бы изменить пароль, заня старый:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-keygen -p -f ~/.ssh/test-key
+}}}
+
+
+'''
+Enter old passphrase:
+Key has comment 'Testing Key'
+Enter new passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved with the new passphrase.
+'''
+
+
+=== ssh-copy-id — копирование ключа на сервер ===
+
+Скопировать ключ можно вручную, получив его публичную часть:
+
+{{{code: lang="sh" linenumbers="False"
+cat .ssh/test-key.pub
+}}}
+
+
+''ssh-rsa AAAAB***gud2vedL/V Testing key''
+
+И скопировав содержимое в файл ~/.ssh/authorized_keys на удалённом хосте.
+
+Другой вариант — используя утилиту ssh-copy-id, которая, по сути, выполнит всё тоже самое, но при этом ещё и проверит права доступа на каталоги и файлы (самая частая проблема при использовании SSH-ключей для аутентификации):
+
+{{{code: lang="sh" linenumbers="False"
+ssh-copy-id -i /home/setevoy/.ssh/test-key setevoy@rtfm.co.ua
+}}}
+
+
+'''
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/home/setevoy/.ssh/test-key.pub"
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+setevoy@rtfm.co.ua's password:
+Number of key(s) added: 1
+Now try logging into the machine, with:   "ssh 'setevoy@rtfm.co.ua'"
+and check to make sure that only the key(s) you wanted were added.
+'''
+
+
+И пробуем подключиться, используя этот ключ:
+
+{{{code: lang="sh" linenumbers="False"
+ssh setevoy@rtfm.co.ua -i .ssh/test-key
+}}}
+
+
+'''
+Enter passphrase for key '.ssh/test-key':
+Linux rtfm-do-production 4.9.0-8-amd64 #1 SMP Debian 4.9.144-3.1 (2019-02-19) x86_64
+...
+setevoy@rtfm-do-production:~$
+'''
+
+
+=== ssh-add ===
+
+Окей, теперь у нас ключ для аутентификации на сервере, и ключ закрыт паролем.
+
+При каждом обращении к серверу — нам придётся вводить пароль заново — Enter passphrase for key ‘/home/setevoy/.ssh/test-key’.
+
+Что бы избежать этого — добавим ключ в ssh-agent, используя ssh-add.
+
+Проверим, что агент запущен:
+
+{{{code: lang="sh" linenumbers="False"
+ps aux | grep ssh-agent
+}}}
+
+
+'''
+setevoy     1322  0.0  0.0   5796   456 ?        Ss   Nov30   0:00 ssh-agent -s
+setevoy     1324  0.0  0.0   5796  2160 ?        Ss   Nov30   0:00 ssh-agent -s
+...
+'''
+
+
+=== Could not open a connection to your authentication agent ===
+
+Самая частая ошибка при  использовании агента — когда к нему невозможно подключиться, и ssh-add сообщает:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add
+}}}
+
+
+	''Could not open a connection to your authentication agent.''
+
+Первым делом проверяем SSH_AGENT_PID (или $SSH_AUTH_SOCK, т.к. запросы от ssh-add выполняются через сокет, заданный в этой переменной):
+
+{{{code: lang="sh" linenumbers="False"
+test -z $SSH_AGENT_PID; echo $?
+}}}
+
+
+Переменная пустая.
+
+ssh-agent был запущен в другом терминале (об этом тоже поговорим ниже), поэтому перезапустим его.
+
+Для «чистоты эксперимента» — убиваем запущеные инстансы агента:
+
+{{{code: lang="sh" linenumbers="False"
+killall ssh-agent
+}}}
+
+
+И запускаем заново:
+
+{{{code: lang="sh" linenumbers="False"
+eval $(ssh-agent -s)
+}}}
+
+
+	''Agent pid 452333''
+
+s используем для создания переменных, т.к. не все будут запускать из bash, а eval — что бы сразу выполнить експорт переменных (export SSH_AUTH_SOCK) из output самого ssh-agent.
+
+Проверяем ещё раз
+
+{{{code: lang="sh" linenumbers="False"
+test -z $SSH_AGENT_PID; echo $?
+}}}
+
+
+	''1''
+
+И ssh-add:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add -l
+}}}
+
+
+	''The agent has no identities.''
+
+Тут всё готово.
+
+=== Добавление ключа ===
+
+Выполняем:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add /home/setevoy/.ssh/test-key
+}}}
+
+
+'''
+Enter passphrase for /home/setevoy/.ssh/test-key:
+Identity added: /home/setevoy/.ssh/test-key (Testing key)
+'''
+
+
+=== Проверка ключей в агенте ===
+
+Проверяем загруженные в агент ключи, используя -l:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add -l
+}}}
+
+
+	''2048 SHA256:pTyrGtk1hnNHB6b8ilp5jRe1+K4KrLHg50yUGilApLY Testing key (RSA)''
+
+
+=== Удаление ключа ===
+
+Используем -d для удаления одного ключа:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add -d .ssh/test-key
+}}}
+
+
+	''Identity removed: .ssh/test-key (Testing key)''
+
+Или -D для удаления всех ключей:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add -D
+}}}
+
+
+	''All identities removed.''
+
+
+=== Автоматическое добавление в ssh-agent ===
+
+Что бы ssh (и git, например) всегда добавляли ключ в ssh-agent без явного ручного вызова ssh-add — добавьте AddKeysToAgent в ~/.ssh/config, указав yes, confirm или ask (см. SSH_ASKPASS):
+
+{{{code: lang="sh" linenumbers="False"
+head -1 .ssh/config
+}}}
+
+
+	''AddKeysToAgent yes''
+
+Проверяем — сейчас ключей в агенте нет:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add -l
+}}}
+
+
+	''The agent has no identities.''
+
+Выполняем подключение, вводим пароль ключа:
+
+{{{code: lang="sh" linenumbers="False"
+ssh -i .ssh/test-key setevoy@rtfm.co.ua
+}}}
+
+
+'''
+Enter passphrase for key '.ssh/test-key':
+...
+setevoy@rtfm-do-production:~$
+'''
+
+
+Отключаемся, проверяем ключи в агенте:
+
+{{{code: lang="sh" linenumbers="False"
+logout
+}}}
+
+
+	''Connection to rtfm.co.ua closed.''
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add -l
+}}}
+
+
+	''2048 SHA256:pTyrGtk1hnNHB6b8ilp5jRe1+K4KrLHg50yUGilApLY Testing key (RSA)''
+
+И теперь при повторном подключении — ключ уже будет взят из агента, и пароль вводить не потребуется:
+
+{{{code: lang="sh" linenumbers="False"
+ssh -i .ssh/test-key setevoy@rtfm.co.ua
+}}}
+
+
+'''
+...
+setevoy@rtfm-do-production:~$
+'''
+
+
+==== Запуск ssh-agent и несколько консолей ====
+
+Одна из основных проблем, это то, что при запуске новой вкладки в Konsole и инициализации новой bash-сесии — там не будет переменной $SSH_AUTH_SOCK, и ssh-клиент не сможет получить доступ к ключу.
+
+Например, при вызове ssh-add в новом терминале получим уже упомянутую ошибку «Could not open a connection to your authentication agent«:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add -l
+}}}
+
+
+	''Could not open a connection to your authentication agent.''
+
+
+=== ~/.bashrc ===
+
+Вариантов много, например самый простой — добавить в [[~/.bashrc:]]
+
+	if [ -z "$SSH_AUTH_SOCK" ] ; then
+	  eval `ssh-agent -s`
+	  ssh-add /home/setevoy/.ssh/test-key
+	fi
+
+Но тогда для каждой сессии bash будет запускаться новый агент.
+
+Ещё одним вариантом запуска через .bashrc может быть такой:
+
+	ssh-add -l &>/dev/null
+	if [ "$?" == 2 ]; then
+	  test -r ~/.ssh-agent-env && \
+		eval "$(<~/.ssh-agent-env)" >/dev/null
+	  ssh-add -l &>/dev/null
+	  if [ "$?" == 2 ]; then
+		(umask 066; ssh-agent > ~/.ssh-agent-env)
+		eval "$(<~/.ssh-agent-env)" >/dev/null
+		ssh-add /home/setevoy/.ssh/test-key
+	  fi
+	fi
+
+Тут выполняется (см. коды ответа ssh-agent в документации):
+
+	пытается выполнить ssh-add -l, перенаправляет весь вывод в /dev/null
+	проверяет код выхода предыдущей комнады
+		если код == 2 (ошибка подключения к агенту)
+			проверяет доступен ли на чтение ~/.ssh-agent-env, считывает его содержимое, и передаёт его в bash
+			повторяет ssh-add -l
+			если код по-прежнему 2:
+				создаёт файл ~/.ssh-agent-env с правами 660 (чтение и запись только владельцу)
+				запускает ssh-agent, и перенаправляет его вывод в файл .ssh-agent-env
+				считывает содержимое .ssh-agent-env, и передаёт его в bash
+				выполняет ssh-add /home/setevoy/.ssh/test-key
+
+Более-менее вариант, т.к. во всех сессиях у нас будет использоваться один и тот же агент (хотя некоторые рекомендуют использовать различных агентов для разных пулов ключей, например для личных ключей — один агент, для рабочих — другой).
+
+=== systemd ===
+
+Ещё один вариант — создать systemd unit-файл и запускать ssh-agent как сервис
+Добавляем каталог, если не создан:
+
+{{{code: lang="sh" linenumbers="False"
+mkdir -p .config/systemd/user/
+}}}
+
+
+И создаём файл ~/.config/systemd/user/ssh-agent.service:
+
+	[Unit]
+	Description=SSH key agent
+	[Service]
+	Type=simple
+	Environment=SSH_AUTH_SOCK=%t/ssh-agent.socket
+	ExecStart=/usr/bin/ssh-agent -D -a $SSH_AUTH_SOCK
+	[Install]
+	WantedBy=default.target
+
+Далее, Wiki говорит про файл ~/.pam_environment, но у меня Openbox и я переменные обычно задаю в .config/openbox/autostart:
+
+{{{code: lang="sh" linenumbers="False"
+head -2 .config/openbox/autostart
+ssh-agent.service
+}}}
+
+
+	''SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"''
+
+Останавливаем запущенные инстансы агента:
+
+{{{code: lang="sh" linenumbers="False"
+killall ssh-agent
+}}}
+
+
+Проверяем значение XDG_RUNTIME_DIR:
+
+{{{code: lang="sh" linenumbers="False"
+echo $XDG_RUNTIME_DIR
+}}}
+
+
+	''/run/user/1000''
+
+Сейчас задаём переменную $SSH_AUTH_SOCK вручную:
+
+{{{code: lang="sh" linenumbers="False"
+SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent.socket"
+}}}
+
+
+И запускам агент через systemctl --user:
+
+{{{code: lang="sh" linenumbers="False"
+systemctl --user start ssh-agent
+}}}
+
+
+Проверяем:
+
+{{{code: lang="sh" linenumbers="False"
+systemctl --user status ssh-agent
+}}}
+
+
+● ssh-agent.service - SSH key agent
+ Loaded: loaded (/home/setevoy/.config/systemd/user/ssh-agent.service; disabled; vendor preset: enabled)
+  Active: active (running) since Sun 2019-12-01 09:15:18 EET; 2s ago
+Main PID: 497687 (ssh-agent)
+  CGroup: /user.slice/user-1000.slice/user@1000.service/ssh-agent.service
+		  └─497687 /usr/bin/ssh-agent -D -a /run/user/1000/ssh-agent.socket
+Dec 01 09:15:18 setevoy-arch-pc systemd[670]: Started SSH key agent.
+Dec 01 09:15:19 setevoy-arch-pc ssh-agent[497687]: SSH_AUTH_SOCK=/run/user/1000/ssh-agent.socket; export SSH_AUTH_SOCK;
+Dec 01 09:15:19 setevoy-arch-pc ssh-agent[497687]: echo Agent pid 497687;
+
+Переменную сокета:
+
+{{{code: lang="sh" linenumbers="False"
+echo $SSH_AUTH_SOCK
+}}}
+
+
+	''/run/user/1000/ssh-agent.socket''
+
+И пробуем ssh-add:
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add -l
+}}}
+
+
+	''The agent has no identities.''
+
+Работает.
+
+Можно добавить в автозапуск:
+
+{{{code: lang="sh" linenumbers="False"
+systemctl --user enable ssh-agent
+}}}
+
+
+'''
+Created symlink /home/setevoy/.config/systemd/user/default.target.wants/ssh-agent.service 
+ /home/setevoy/.config/systemd/user/ssh-agent.service.
+'''
+
+
+=== ~/.xinitrc ===
+
+Ещё один вариант — запускать из ~/.xinitrc.
+
+В таком случае, при вызове startx (как у меня, когда login manager нет, и X.Org запускается вручную, через вызов startx в консоли) будет запущен агент, а затем — Openbox
+
+{{{code: lang="sh" linenumbers="False"
+cat ~/.xinitrc
+}}}
+
+
+'''
+eval $(ssh-agent) &
+exec openbox-session
+'''
+
+
+Кроме того,  вместо самого ssh-agent можно использовать либо «обёртки», которые будут «проксировать» запросы от ssh-add и других клиентов к ssh-agent, либо полностью заменят ssh-agent
+
+см. также:
+[[https://rtfm.co.ua/linux-keepass-ssh-i-xranenie-parolej-rsa-klyuchej/|KeePass, SSH и хранение паролей RSA-ключей]]

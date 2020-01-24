@@ -1,0 +1,143 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-22T12:37:30+03:00
+
+====== Установка и настройка ======
+Создан Среда 22 Январь 2020
+
+TODO:	Переделать так, чтобы монтировалось в /media/webdav
+
+{{{code: lang="sh" linenumbers="False"
+$ sudo -i
+$ apt -y install apache2 apache2-utils
+$ mkdir /home/webdav
+$ chown www-data. /home/webdav
+$ chmod 770 /home/webdav
+
+}}}
+
+Редактируем файл  /etc/apache2/sites-available/webdav.conf
+
+'''
+Alias /webdav /home/webdav
+<Location /webdav>
+    DAV On
+    SSLRequireSSL On
+    Options Indexes FollowSymLinks
+    Allow from all
+    AuthType Basic
+    AuthName WebDAV
+    AuthUserFile /etc/apache2/.htpasswd
+    Require valid-user
+</Location>
+'''
+ 
+
+{{{code: lang="sh" linenumbers="False"
+$ a2enmod dav*
+}}}
+
+'''
+Enabling module dav.
+Considering dependency dav for dav_fs:
+Module dav already enabled
+Enabling module dav_fs.
+Enabling module dav_lock.
+To activate the new configuration, you need to run:
+  service apache2 restart
+'''
+
+
+{{{code: lang="sh" linenumbers="False"
+$ a2ensite webdav
+$ a2enmod ssl
+$ systemctl restart apache2
+
+}}}
+
+
+===== Добавляем пользователя под который будет использовать weddav =====
+
+{{{code: lang="sh" linenumbers="False"
+$ htpasswd -c /etc/apache2/.htpasswd <username>
+}}}
+
+# Задаем пароль для пользователя
+
+'''
+New password:     # set password
+
+Re-type new password:
+Adding password for user debian
+'''
+ 
+
+ВНИМАНИЕ: доступ по HTTPS://ip-addr/webdav, для доступа по HTTP://ip-addr/webdav необходимо в webdav.conf использовать опцию
+
+	''SSLRequireSSL Off''
+
+На клиентских машинах устанавливаем davfs
+
+{{{code: lang="sh" linenumbers="False"
+$ sudo apt-get install davfs2
+}}}
+
+При установке выбраем пункт «Да», для разрешения монтирования облачных хранилищ непривилегированным пользователям ОС. 
+Также, для удобного монтирования, без необходимости ввода пароля корневого пользователя (root), необходимо добавить пользователя в группу «davfs2»
+
+{{{code: lang="sh" linenumbers="False"
+$ sudo usermod -aG davfs2 $USER
+}}}
+
+NB! На практике все равно не дает монтировать непривелигированным пользователям
+
+Для того, чтобы каждый раз не вводить имя пользователя и пароль необходимо добавить строку с акаунтом в файл /etc/davfs2/secrets:
+
+	''https://<ip-addr>/webdav   <username>     <passwd>''
+
+Для того, чтобы каждый раз не подтверждать принятие сертификата необходимо выполнить следующие действия:
+1) в браузере перейти по адресу https://<ip-addr>/webdav/ и нажать на иконку с замочком и восклицательным знаком
+2) в появившемся окне переходим "Незащищенное соединение->Подробнее->Просмотреть сертификат->Подробности->Экспортировать" и указываем путь для экспортируемого сертификата
+3) копируем сертификат в папку /etc/davfs2/certs
+4) в файле /etc/davfs2/certs прописываем строку
+
+	''trust_server_cert /etc/davfs2/certs/<имя сертификата>''
+
+
+===== Монтирование хранилища =====
+{{{code: lang="sh" linenumbers="False"
+$sudo mount -o rw,uid=maksimov,gid=maksimov -t davfs https://ip-addr/webdav/ /media/webdav/
+}}}
+
+'''
+Please enter the username to authenticate with server
+https://<ip-addr>/webdav/ or hit enter for none.
+  Username: debian
+Please enter the password to authenticate user debian with server
+https://<ip-addr>/webdav/ or hit enter for none.
+  Password:  
+/sbin/mount.davfs: the server certificate does not match the server name
+/sbin/mount.davfs: the server certificate is not trusted
+  issuer:      debian.nii-ps.ru
+  subject:     debian.nii-ps.ru
+  identity:    debian.nii-ps.ru
+  fingerprint: 6f:f7:94:a9:cf:99:8d:6d:67:c0:0e:47:b6:d5:f3:d1:21:0b:23:e5
+You only should accept this certificate, if you can
+verify the fingerprint! The server might be faked
+or there might be a man-in-the-middle-attack.
+Accept certificate for this session? [y,N] y
+'''
+
+
+Для упрощения монтирования добавляем в /etc/fstab
+	''https://<ip-addr>/webdav /media/webdav	davfs rw,user,noauto 0 0''
+
+
+===== Разонтирование хранилища =====
+{{{code: lang="sh" linenumbers="False"
+$ sudo umount /media/webdav
+}}}
+
+
+
+

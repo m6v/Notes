@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-14T12:07:19+03:00
+
+====== Geotiff ======
+Создан Вторник 14 Январь 2020
+
+http://saga-gis.org/en/index.html
+https://sourceforge.net/p/saga-gis/wiki/Home/

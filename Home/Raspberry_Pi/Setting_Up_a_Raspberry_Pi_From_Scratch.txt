@@ -1,0 +1,53 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-16T09:46:47+03:00
+
+====== Setting Up a Raspberry Pi From Scratch ======
+Создан Четверг 16 Январь 2020
+
+The SD card on one of my Raspberry Pi systems filled up recently, so I decided to wipe it and reinstall Raspbian. The main Rasbian distribution, however, is designed to help teach kids to code and includes lots of tools that I generally don’t use, so I decided to build it from scratch.
+
+The Raspberry Pi Foundation provides a light version of the Raspbian OS, which is intended for Pis used as servers or in embedded devices. Raspbian Jessie Lite doesn’t include a graphical interface by default, nor does it include any of the various browsers, office tools, or programming tools that you’d normally expect to see on a Pi. It’s pretty much just the basic OS and the standard utilities you’ll to find on any Linux machine.
+
+To get started, download the latest Raspbian Jessie Lite image and use your method of choice to install it on your SD card. Since I’m working form a Mac, I usually use IvanX’s Pi Filler. Once the card is built, stick it in your Pi, boot up, and run raspi-config right away to set up your Pi and change your password.
+
+{{{code: lang="sh" linenumbers="False"
+sudo raspi-config
+}}}
+
+Since this is an advanced tutorial, I’ll assume you’re already familiar with raspi-config, so I won’t spend time on it here. If you need help, there are plenty of tutorials online.
+
+Now, I’ve never been a fan of the Raspberry Pi’s desktop environment, LXDE. I just don’t really like how it looks and it’s difficult to customize. PIXEL, the new implementation of LXDE on new versions of Raspbian is a little better looking, but I still can’t get into it. Instead, I much prefer XFCE, another lightweight desktop environment. Unlike LXDE, you can configure XFCE up the ying-yang, making things look exactly the way you want.
+
+We first need to install the XWindow system, which is the low-level software that allows graphical desktops. Since we don’t want to accidentally install any of the default PIXEL libraries, however, we’ll use the -—no-install-recommends option with apt-get:
+
+{{{code: lang="sh" linenumbers="False"
+sudo apt-get install -—no-install-recommends xserver-xorg
+sudo apt-get install -—no-install-recommends xinit
+}}}
+
+Next we’ll install XFCE, the XFCE terminal application, and the LightDM display manager:
+
+{{{code: lang="sh" linenumbers="False"
+sudo apt-get install xfce4 xfce4-terminal lightdm
+}}}
+
+This will install a ton of dependencies, and will take a while to complete.
+
+At this point you could run startx and have a working system, but it would be extremely basic, so we’ll also add a bunch of XFCE utilities. These let you add desktop features like status bar icons and desktop widgets that help make the interface more user friendly:
+
+{{{code: lang="sh" linenumbers="False"
+sudo apt-get install xfce4-goodies xfce4-indicator-plugin xfce4-limelight-plugin xfce4-mpc-plugin xfce4-whiskermenu-plugin
+}}}
+
+Now lets start the graphical environment:
+
+{{{code: lang="sh" linenumbers="False"
+startx
+}}}
+
+The first time you run XFCE, you’ll see a screen that looks something like this:
+
+{{./pasted_image.png}}
+
+см.: [[https://www.kodiakskorner.com/log/348|Setting Up a Raspberry Pi From Scratch]]

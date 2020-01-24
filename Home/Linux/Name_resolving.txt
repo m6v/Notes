@@ -1,0 +1,32 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-22T21:51:51+03:00
+
+====== Name resolving ======
+Создан Среда 22 января 2020
+
+[[https://habr.com/ru/post/66020/|Что такое Zeroconf и с чем его едят]]
+
+{{{code: lang="sh" linenumbers="False"
+/etc/init.d/avahi-daemon restart
+Restarting Avahi mDNS/DNS-SD Daemon: avahi-daemonavahi-daemon disabled because there is a unicast .local domain ... (warning).
+}}}
+
+
+Подобная проблема появляется, когда используемый dns-сервер (обычный, не mdns) штатным образом зачем-то объявляет эту зону .local.  Если она какой-то определённой функции в сети не несёт, необходимо убрать ее из настроек dns-сервера. Если эта зона в сети зачем-то нужна, необходимо прописать в настройках avahi другую зону вместо .local.
+
+Открываем
+{{{code: lang="sh" linenumbers="False"
+$ sudo nano /etc/nsswitch.conf
+}}}
+
+находим строчку
+	''hosts:          files mdns4_minimal [NOTFOUND=return] dns mdns4''
+и удаляем [NOTFOUND=return].
+
+Отключаем обнаружение домена .local
+{{{code: lang="sh" linenumbers="False"
+$ sudo nano /etc/default/avahi-daemon
+}}}
+
+	''AVAHI_DAEMON_DETECT_LOCAL=0''

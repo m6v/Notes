@@ -1,0 +1,260 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-20T22:21:47+03:00
+
+====== Git ======
+Создан Пятница 20 декабря 2019
+
+[[./Учусь Git.pdf|Учусь Git]]
+[[https://habr.com/ru/company/mailru/blog/267595/|19 советов по повседневной работе с Git]]
+
+===== Устанавливаем SSH-ключи =====
+Git установлен, профиль на GitHub создан. Осталось добавить SSH-ключ и можно приступать к работе с проектом. Чтобы работать со своего компьютера с GitHub, иметь доступ к проектам, хранящимся на сервисе, выполнять команды в консоли без постоянного подтверждения пароля, нужно пройти авторизацию у сервера. В этом помогают SSH-ключи. Чтобы пройти авторизацию по SSH-ключу, его надо сгенерировать или найти уже ранее созданный ключ на своём компьютере. Сначала проверим, есть ли уже на компьютере ключ. По умолчанию SSH-ключи хранятся в каталоге ~/.ssh, поэтому нужно проверить содержимое этого каталога.
+
+Ищем пару файлов с названиями вида имя и имя.pub. Обычно имя — id_rsa, id_dsa, id_ecdsa или id_ed25519. Файл с расширением .pub — ваш публичный ключ, а второй — ваш приватный, секретный ключ. Если таких файлов или даже каталога .ssh у вас нет, вы можете их сгенерировать. Для этого делаем следующее.
+Открываем консоль и вводим команду:
+ssh-keygen -t rsa -b 4096 -C "your_mail@example.com"
+Указываем тот адрес электронной почты, который вводили при регистрации на GitHub.
+
+
+===== Install Bash git completion =====
+
+{{{code: lang="python3" linenumbers="False"
+sudo apt-get install git bash-completion
+}}}
+
+
+===== Клонирование (копирование существующего репозитория Git с сервера на локальный компьютер) репозитория =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git clone https://github.com/m6v/unidirectionalfilechange.git
+}}}
+
+
+===== Добавление нового файла в каталог проекта =====
+
+{{{code: lang="sh" linenumbers="False"
+$ touch TODO
+}}}
+
+
+===== Добавление нового файла в репозиторий =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git add TODO
+}}}
+
+
+===== Получение статуса =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git status
+}}}
+
+'''
+На ветке master
+Ваша ветка обновлена в соответствии с «origin/master».
+'''
+
+
+'''
+Изменения, которые будут включены в коммит:
+  (используйте «git reset HEAD <файл>…», чтобы убрать из индекса)
+
+	новый файл:    TODO
+'''
+
+
+===== Коммит =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git status
+}}}
+
+'''
+[master 36815da] Added TODO list.
+ 1 file changed, 1 insertion(+)
+ create mode 100644 TODO
+'''
+
+
+===== Получение статуса =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git status
+}}}
+
+'''
+На ветке master
+Ваша ветка опережает «origin/master» на 1 коммит.
+  (используйте «git push», чтобы опубликовать ваши локальные коммиты)
+
+нечего коммитить, нет изменений в рабочем каталоге
+'''
+
+
+===== Отправка изменений в удаленный репозиторий =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git push
+}}}
+
+'''
+Username for 'https://github.com': m6v
+Password for 'https://m6v@github.com': 
+Подсчет объектов: 3, готово.
+Delta compression using up to 8 threads.
+Сжатие объектов: 100% (2/2), готово.
+Запись объектов: 100% (3/3), 308 bytes | 308.00 KiB/s, готово.
+Total 3 (delta 1), reused 0 (delta 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To https://github.com/m6v/unidirectionalfilechange.git
+   24ad70e..36815da  master -> master
+'''
+
+
+===== Изменение файла =====
+
+{{{code: lang="sh" linenumbers="False"
+$ echo 12345 >> TODO
+$ git status
+}}}
+
+'''
+На ветке master
+Ваша ветка обновлена в соответствии с «origin/master».
+'''
+
+
+'''
+Изменения, которые не в индексе для коммита:
+  (используйте «git add <файл>…», чтобы добавить файл в индекс)
+  (используйте «git checkout -- <файл>…», чтобы отменить изменения
+   в рабочем каталоге)
+
+	изменено:      TODO
+
+нет изменений добавленных для коммита
+(используйте «git add» и/или «git commit -a»)
+'''
+
+
+===== Добавляем измененный файл в коммит =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git add . # уточнить, измененные файлы вроде бы добавляются опцией -m
+}}}
+
+
+===== Получение статуса =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git status
+}}}
+
+'''
+На ветке master
+Ваша ветка обновлена в соответствии с «origin/master».
+
+Изменения, которые будут включены в коммит:
+  (используйте «git reset HEAD <файл>…», чтобы убрать из индекса)
+
+	изменено:      TODO
+
+# git commit -m "Обновлен список задач"
+[master d96fef5] Обновлен список задач
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+'''
+
+
+===== Пушим коммит в удаленный репозиторий =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git push
+}}}
+
+'''
+Username for 'https://github.com': m6v
+Password for 'https://m6v@github.com': 
+Подсчет объектов: 3, готово.
+Delta compression using up to 8 threads.
+Сжатие объектов: 100% (3/3), готово.
+Запись объектов: 100% (3/3), 486 bytes | 486.00 KiB/s, готово.
+Total 3 (delta 1), reused 0 (delta 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+To https://github.com/m6v/unidirectionalfilechange.git
+   36815da..d96fef5  master -> master
+'''
+
+
+===== Смотрим лог =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git log master
+}}}
+
+'''
+commit d96fef5bc1fd6924c6ff97e00f43b2bb800c726a (HEAD -> master, origin/master, origin/HEAD)
+Author: Sergey Maksimov <m6v@mail.ru>
+Date:   Mon Nov 25 20:40:01 2019 +0300
+
+    Обновлен список задач
+
+commit 36815da4b881f01da7ba4f66de3591e4b259cd7d
+Author: Sergey Maksimov <m6v@mail.ru>
+Date:   Mon Nov 25 20:01:00 2019 +0300
+
+    Added TODO list.
+
+commit 24ad70ec181a45f47c626058cf87959663493d6c
+Author: m6v <m6v@mail.ru>
+Date:   Fri Feb 1 14:59:29 2019 +0300
+
+    first commit
+'''
+
+
+
+===== Показать содержимое изменений =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git show d96fef5bc1fd6924c6ff9 # несколько начальных цифр хеша коммита
+}}}
+
+'''
+commit d96fef5bc1fd6924c6ff97e00f43b2bb800c726a (HEAD -> master, origin/master, origin/HEAD)
+Author: Sergey Maksimov <m6v@mail.ru>
+Date:   Mon Nov 25 20:40:01 2019 +0300
+
+    Обновлен список задач
+
+diff --git a/TODO b/TODO
+index 3d62f86..1f84b6f 100644
+--- a/TODO
++++ b/TODO
+@@ -1 +1,4 @@
+-# Список доработок
+\ No newline at end of file
++# Список доработок
++Сделать заготовки для *.deb пакетов приемника и передатчика
++Задавать чтение опций из файла, а не командной строки
++Сделать логирование в файл или syslog
+\ No newline at end of file
+'''
+
+
+===== Показать все отслеживаемые файлы в репозитории =====
+
+{{{code: lang="sh" linenumbers="False"
+$ git ls-tree --full-tree -r --name-only HEAD # --name-only показывать только имена файлов (без хешей)
+}}}
+
+
+===== Вернуть состояние файла в то, которое было на момент заданного коммита =====
+
+{{{code: lang="sh" linenumbers="False"
+git checkout 3f25701874aa5a2c16cc6275fa30baa5b6e477a6 <имя_файла>
+}}}
+
+, где <имя_файла> - это имя файла с полным путем относительно корня репозитария
+

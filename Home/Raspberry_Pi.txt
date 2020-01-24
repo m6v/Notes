@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-16T09:37:22+03:00
+
+====== Raspberry Pi ======
+Создан Четверг 16 Январь 2020
+
