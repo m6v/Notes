@@ -120,6 +120,7 @@ ssh -T git@github.com
 
 {{./pasted_image015.png}}
 
+<<<<<<< HEAD
 
 ===== Добавление ключей в ssh-агент =====
 
@@ -135,3 +136,5 @@ ssh-add ~/.ssh/id_rsa
 Identity added: /home/maksimov/.ssh/id_rsa (/home/maksimov/.ssh/id_rsa)
 
 NB! Для приватных репозиториев все равно будет спрашиваеть логин и пароль!
+=======
+>>>>>>> 4724cfd5d941f34b8dc20c1db74166b5f9e6915c
