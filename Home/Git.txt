@@ -20,14 +20,14 @@ ssh-keygen -t rsa -b 4096 -C "your_mail@example.com"
 ===== Install Bash git completion =====
 
 {{{code: lang="python3" linenumbers="False"
-sudo apt-get install git bash-completion
+$ sudo apt-get install git bash-completion
 }}}
 
 
 ===== Клонирование (копирование существующего репозитория Git с сервера на локальный компьютер) репозитория =====
 
 {{{code: lang="sh" linenumbers="False"
-$ git clone https://github.com/m6v/unidirectionalfilechange.git
+$ git clone git@github.com:m6v/unidirectionalfilechange.git
 }}}
 
 

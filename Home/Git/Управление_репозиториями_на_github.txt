@@ -8,18 +8,18 @@ Creation-Date: 2020-01-24T08:58:58+03:00
 ===== Управление с помощью веб-интерфейса =====
 
 ==== Создание репозитория ====
-Нажать кнопку New
+Нажать кнопку ''New''
 
 {{./pasted_image007.png}}
 
-Ввести имя репозитория, выбрать требуемые опции и нажать кнопку Create repository
+Ввести имя репозитория, выбрать требуемые опции и нажать кнопку ''Create repository''
 {{./pasted_image008.png}}
 
-На вкладке Code будут подсказки по работе с репозиторием
+На вкладке ''Code'' будут подсказки по работе с репозиторием
 {{./pasted_image009.png}}
 
 ==== Переименование репозитория ====
-Перейти на вкладку Settings, в поле Repository name ввести новое имя и нажать кнопку Rename
+Перейти на вкладку ''Settings'', в поле ''Repository'' name ввести новое имя и нажать кнопку ''Rename''
 
 {{./pasted_image010.png}}
 
@@ -27,13 +27,13 @@ Creation-Date: 2020-01-24T08:58:58+03:00
 Открыть репозиторий
 {{./pasted_image003.png}}
 
-Открыть вкладку Settings
+Открыть вкладку ''Settings''
 {{./pasted_image004.png}}
 
-Прокрутить страницу вниз и в разделе Danger Zone нажать кнопку Delete this repositury
+Прокрутить страницу вниз и в разделе ''Danger Zone'' нажать кнопку ''Delete this repositury''
 {{./pasted_image002.png}}
 
-В появившемся окне ввести имя пользователя и название репозитория и нажать кнопку I understand the consequences, delete this repository
+В появившемся окне ввести имя пользователя и название репозитория и нажать кнопку ''I understand the consequences, delete this repository''
 {{./pasted_image006.png}}
 
 ===== Управление из коммандной строки =====
@@ -62,11 +62,19 @@ Creation-Date: 2020-01-24T08:58:58+03:00
 <Token> - токен с правами на создание, удаление репозиториев (см.: https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line).
 
 Получение списка репозиториев
-curl -s -u 'm6v' https://api.github.com/user/repos | grep -o 'git@[^"]*'
+{{{code: lang="sh" linenumbers="False"
+$ curl -s -u 'm6v' https://api.github.com/user/repos | grep -o 'git@[^"]*'
+# как сделать тоже самое по протоколу git?
+}}}
 
 Ввести пароль пользователя GitHub
+'''
 Enter host password for user 'm6v':
-
+git@github.com:m6v/Notes.git
+git@github.com:m6v/pyjet-mf.git
+git@github.com:m6v/unidirectionalfilechange.git
+git@github.com:m6v/weather-mf.git
+'''
 
 
 ==== Создание нового репозитория ====
@@ -100,10 +108,7 @@ $ curl -i -H 'Authorization: token <Token>' -X 'DELETE' 'https://api.github.com/
 В главном меню git выбрать элемент ''Settings''
 {{./pasted_image011.png}}
 
-Открыть вкладку ''SSH and GPG keys'' и нажать кнопку ''New SSH key''
-{{./pasted_image012.png}}
-
-Нажать кнопку ''New SSH key'', ввести название ключа, скопировать содержимое ключа в поле ''Key'' и нажать кнопку ''Add SSH key''
+Открыть вкладку ''SSH and GPG keys,'' нажать кнопку ''New SSH key'', ввести название ключа, скопировать содержимое ключа в поле ''Key'' и нажать кнопку ''Add SSH key''
 {{./pasted_image013.png}}
 
 Добавленный ключ должен появиться в поле ''SSH keys''
@@ -111,49 +116,44 @@ $ curl -i -H 'Authorization: token <Token>' -X 'DELETE' 'https://api.github.com/
 
 ==== Тестируем подключение к GitHub ====
 {{{code: lang="sh" linenumbers="False"
-ssh -T git@github.com
+$ ssh -T git@github.com
 }}}
 
-''Hi m6v! You've successfully authenticated, but GitHub does not provide shell access.''
+	''Hi m6v! You've successfully authenticated, but GitHub does not provide shell access.''
 
-Создание 
-
-{{./pasted_image015.png}}
 
 ===== Добавление ключей в ssh-агент =====
 
 ==== Проверка ssh-агента ====
-ssh-agent -s
+{{{code: lang="sh" linenumbers="False"
+$ ssh-agent -s
+}}}
 
+'''
 SSH_AUTH_SOCK=/tmp/ssh-I4BdCgnAIsIu/agent.25515; export SSH_AUTH_SOCK;
 SSH_AGENT_PID=25516; export SSH_AGENT_PID;
 echo Agent pid 25516;
+'''
+
 
 ==== Добавление ключей ====
-ssh-add ~/.ssh/id_rsa
-Identity added: /home/maksimov/.ssh/id_rsa (/home/maksimov/.ssh/id_rsa)
+{{{code: lang="sh" linenumbers="False"
+$ ssh-add ~/.ssh/id_rsa
+}}}
+
+	''Identity added: /home/maksimov/.ssh/id_rsa (/home/maksimov/.ssh/id_rsa)''
 
 NB!
 Для приватных репозиториев все равно будет спрашиваеть логин и пароль!
-git push тоже требует логин и пароль!
 
 Распространенной ошибкой является клонирование с использованием по умолчанию (HTTPS) вместо SSH. Вы можете исправить это, перейдя в свой репозиторий, нажав "Клонировать или загрузить", затем нажав кнопку "Использовать SSH" над полем URL.  
 {{./pasted_image022.png}}
-Должен выглядеть так
+
+Результат должен выглядеть следующим образом
 {{./pasted_image023.png}}
 
-Обновить URL-адрес удаленного источника, например, так:
-git remote set-url origin git@github.com:username/repo.git
+Обновление URL-адреса удаленного источника
+{{{code: lang="sh" linenumbers="False"
+$ git remote set-url origin git@github.com:username/repo.git
+}}}
 
- git push origin master
-The authenticity of host 'github.com (140.82.118.3)' can't be established.
-RSA key fingerprint is SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8.
-Are you sure you want to continue connecting (yes/no)? yes
-Warning: Permanently added 'github.com,140.82.118.3' (RSA) to the list of known hosts.
-Permission denied (publickey).
-fatal: Не удалось прочитать из внешнего репозитория.
-
-Удостоверьтесь, что у вас есть необходимые права доступа
-и репозиторий существует.
-
-**Ошибка доступа даже под рутом?!!!**
