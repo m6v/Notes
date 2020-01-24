@@ -144,3 +144,16 @@ git push тоже требует логин и пароль!
 
 Обновить URL-адрес удаленного источника, например, так:
 git remote set-url origin git@github.com:username/repo.git
+
+ git push origin master
+The authenticity of host 'github.com (140.82.118.3)' can't be established.
+RSA key fingerprint is SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added 'github.com,140.82.118.3' (RSA) to the list of known hosts.
+Permission denied (publickey).
+fatal: Не удалось прочитать из внешнего репозитория.
+
+Удостоверьтесь, что у вас есть необходимые права доступа
+и репозиторий существует.
+
+**Ошибка доступа даже под рутом?!!!**
