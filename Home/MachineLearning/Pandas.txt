@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-26T17:13:46+03:00
+
+====== Pandas ======
+Создан Воскресенье 26 января 2020
+

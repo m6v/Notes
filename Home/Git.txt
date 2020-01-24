@@ -6,6 +6,7 @@ Creation-Date: 2019-12-20T22:21:47+03:00
 Создан Пятница 20 декабря 2019
 
 [[./Учусь Git.pdf|Учусь Git]]
+[[https://devpractice.ru/category/git/git-for-beginners/|Git для начинающих]]
 [[https://habr.com/ru/company/mailru/blog/267595/|19 советов по повседневной работе с Git]]
 
 ===== Устанавливаем SSH-ключи =====

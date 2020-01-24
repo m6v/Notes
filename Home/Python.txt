@@ -7,6 +7,9 @@ Creation-Date: 2019-12-08T05:35:39+03:00
 
 [[https://webdevblog.ru/category/python/|Еще один блог разработчика]]
 [[https://dev-gang.ru/|Блог о программировании]]
+[[https://devpractice.ru/|Devpractice. Разработка программного обеспечения, технологии и наука]]
+[[https://nuancesprog.ru/tag/python|nuancesprog.ru]]
+[[https://ru.pdfdrive.com/search?q=python&pagecount=&pubyear=&searchin=ru|PDF Drive]]
 
 ===== Виртуальное окружение =====
 [[./Питон в коробке – venv в python 3.3.pdf|Питон в коробке – venv в python 3.3]]
