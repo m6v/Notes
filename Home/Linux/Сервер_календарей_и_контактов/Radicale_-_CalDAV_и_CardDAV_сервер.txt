@@ -1,0 +1,98 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-23T11:55:26+03:00
+
+====== Radicale - CalDAV и CardDAV сервер ======
+Создан Четверг 23 Январь 2020
+
+===== Установка radical на Debian Stretch =====
+{{{code: lang="sh" linenumbers="False"
+su
+# Дальше все команды от root'а
+apt update
+apt install python3-pip
+
+python3 -m pip install --upgrade radicale
+python3 -m pip install --upgrade radicale[bcrypt]
+
+apt install nodejs
+apt install nodejs-legacy  # уточнить не идет ли здесь в комплекте htpasswd?!
+apt install npm
+npm install -g htpasswd # уточнить не идет ли в комплекте с nodejs-legacy?!
+
+htpasswd -B -c /etc/radicale/users maksimov
+
+mkdir -p /var/radicale/collections
+mkdir /etc/radicale
+touch /etc/radicale/config
+nano /etc/radicale/config
+}}}
+
+'''
+[server]
+# Bind all addresses
+hosts = 0.0.0.0:5232
+
+[auth]
+type = htpasswd
+htpasswd_filename = /etc/radicale/users
+htpasswd_encryption = bcrypt
+[storage]
+filesystem_folder = /var/radicale/collections
+'''
+
+
+===== Запуск radical =====
+{{{code: lang="sh" linenumbers="False"
+python3 -m radicale --config=/etc/radicale/config
+}}}
+
+
+При попытке сохранить контакт ошибка 403!?
+
+--------------------
+
+{{{code: lang="sh" linenumbers="False"
+$ cd /tmp
+
+# вариант 1
+$ wget https://api.github.com/repos/Kozea/Radicale/tarball/2.1.10 -O ./Kozea-Radicale-2.1.10.tar.gz
+$ mkdir ./Radicale
+$ tar -xzvf ./Kozea-Radicale-2.1.10.tar.gz --strip=1 -C ./Radicale
+
+# вариант 2
+$ git clone https://github.com/Kozea/Radicale.git
+
+$ cd /tmp/Radicale
+$ sudo python3 radicale.py install
+
+nano /etc/radicale/config
+}}}
+
+'''
+[encoding]
+request = utf-8
+stock = utf-8
+
+[rights]
+type = owner_only
+
+[server]
+# Bind all addresses
+hosts = 0.0.0.0:5232
+
+[auth]
+type = htpasswd
+htpasswd_filename = /etc/radicale/users
+htpasswd_encryption = bcrypt
+
+[storage]
+# type = filesystem
+filesystem_folder = /var/radicale/collections
+
+[logging]
+# config = /etc/radicale
+'''
+
+
+При создании адресной книги обязательно указать полный URL! (например, http://0.0.0.0:5232/maksimov/1bb2fa88-cdbb-c0a3-dc53-2301f27fe21b/) иначе будет ошибка 403!!!

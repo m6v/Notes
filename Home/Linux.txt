@@ -1,0 +1,34 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-24T12:06:18+03:00
+
+====== Linux ======
+Создан Вторник 24 Декабрь 2019
+
+
+
+[[./Лучшие инструменты аудита безопасности Linux.pdf|Лучшие инструменты аудита безопасности Linux]]
+[[./Как включить и использовать файрвол UFW в Ubuntu.pdf|Как включить и использовать файрвол UFW в Ubuntu]]
+[[./Руководство по iptables.pdf|Руководство по iptables]]
+[[./fhs.pdf|Filesystem Hierarchy Standard]] (перевод см.: [[http://rus-linux.net/MyLDP/file-sys/fhs-2.2-rus/fhs-rus.html|rus-linux.net]])
+[[http://www.spy-soft.net/|Информационная безопасность на практике]]
+[[https://itsecforu.ru/|Information Security Squad]]
+
+[[./Управление сервисами и юнитами systemd с помощью systemctl.pdf|Управление сервисами и юнитами systemd с помощью systemctl]]
+[[./Команда find в Linux.pdf|Команда find в Linux]]
+[[./Настройка Rsyslog в Linux.pdf|Настройка Rsyslog в Linux]]
+[[./Установка и использование Partclone.pdf|Установка и использование Partclone]]
+[[https://pastebin.com/d8G1utB7|Аналог devilspie на Python с заданием правил (тоже на Python)]]
+[[./Как собрать бинарный deb пакет.pdf|Как собрать бинарный deb пакет]]
+
+[[https://www.thegeekdiary.com/category/linux/|The geek diary]] # сборник рецептов по настройке Linux (в основном CentOS/RHEL)
+
+Расширение диска виртуальной машины
+Команда расширения диска виртуальной машины с именем machine_name.vdi  до 4Гб (указываем 4000 Мб) следующая
+
+{{{code: lang="sh" linenumbers="False"
+$ VBoxManage modifyhd machine_name.vdi --resize 4000
+}}}
+
+
+

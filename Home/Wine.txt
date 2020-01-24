@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-20T23:19:02+03:00
+
+====== Wine ======
+Создан Пятница 20 декабря 2019
+

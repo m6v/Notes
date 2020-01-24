@@ -1,0 +1,141 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-30T10:25:08+03:00
+
+====== Печать буклетов ======
+Создан Понедельник 30 Декабрь 2019
+
+Одна из самых полезных утилит для редактирования PDF файлов в Linux - это pdftk.
+
+1) Установка
+{{{code: lang="sh" linenumbers="False"
+
+$ sudo apt install pdftk
+}}}
+
+
+2) Объединяем *.pdf, если книга из нескольких файлов (для разделения на отдельные страницы использовать pdftk <filename1>.pdf burst)
+
+{{{code: lang="sh" linenumbers="False"
+$ pdftk input.pdf cat output output.pdf
+}}}
+
+
+3) Удаление ненужных страниц
+
+{{{code: lang="sh" linenumbers="False"
+# удаление первой страницы
+$ pdftk input.pdf cat 2-end output output.pdf
+# удаление четных страниц
+$ pdftk input.pdf cat odd output output.pdf
+}}}
+
+
+4) Если четные и нечетные страницы не на своих местах, добавляем после обложки пустую страницу
+
+{{{code: lang="sh" linenumbers="False"
+# создали пустую страницу
+$ echo "" | ps2pdf -sPAPERSIZE=a4 - ./blank.pdf
+# сохранили первую страницу
+$ pdftk ./book.pdf cat 1 output 1.pdf
+# вырезали первую страницу
+$ pdftk ./book.pdf cat 2-end output ./book-1.pdf
+# собрали новый файл
+$ pdftk ./1.pdf ./blank.pdf ./book-1.pdf output ./final.pdf
+}}}
+
+
+5) Обрезаем поля и устанавливаем свои ('<left> <top> <right> <bottom>'). Поля лучше устанавливать именно на этом этапе, а не с помощью psnup, т.к. последний не позволяет задавать поля индивидуально, а также делать их зеркальными
+
+{{{code: lang="sh" linenumbers="False"
+$ pdfcrop --margins '40 15 15 15' --clip # нужно уточнять т.к. эта команда ничего не делает с файлом?! возможно этот pdfcrop не из того пакета
+$ pdfcrop --clip --margin 5 input_file output_file # автоматически обрезает по границам текста и добавляет 5 мм-края (NB! pdfcrop из пакета texlive-extra-utils)
+}}}
+
+
+Nb! pdfcrop входит в состав пакета texlive-extra-utils, при этом тянет за собой 300Мб зависимостей. Проще скачать с https://sourceforge.net/projects/pdfcrop/files/
+
+6) Преобразуем *.pdf в *.ps
+
+{{{code: lang="sh" linenumbers="False"
+$ pdf2ps <filename>.pdf <filename>.ps
+}}}
+
+
+7) Правильно сортируем страницы
+
+{{{code: lang="sh" linenumbers="False"
+$ psbook <filename1>.ps <filename2>.ps
+}}}
+
+
+8) Делаем брошюру с 2-мя страницами на листе и нужным масштабированием
+
+{{{code: lang="sh" linenumbers="False"
+$ psnup -s1.2 -2 -b50 <filename1>.ps <filename2>.ps
+}}}
+
+Можно делать поля вокруг каждой логической страницы на листе (-b) или вокруг всех страниц (-m), но лучше это доверить pdfcrop
+
+===== Утилиты для преобразования различных форматов =====
+Объединение *.gif, *.tif в многостраичное изображение
+
+{{{code: lang="sh" linenumbers="False"
+$ convert *.tif out.tif
+# convert из состава ImageMagick
+}}}
+
+
+===== Конвертировать многостраничный *.tif в *.pdf =====
+1) Установить libtiff-tools
+{{{code: lang="sh" linenumbers="False"
+$ sudo apt install libtiff-tools
+}}}
+
+2) Конвертировать в *.pdf
+{{{code: lang="sh" linenumbers="False"
+$ tiff2pdf -o ./out.pdf ./out.tif
+}}}
+
+
+===== Конвертировать *.djvu в *.pdf (учесть, что *.pdf будет значительно большего объема) =====
+1) Установить djvulibre-bin
+{{{code: lang="sh" linenumbers="False"
+$ sudo apt-get install djvulibre-bin
+}}}
+
+2) Конвертировать в *.pdf
+{{{code: lang="sh" linenumbers="False"
+$ ddjvu -format=pdf filename.djvu filename.pdf или ddjvu -format=pdf filename.{djvu,pdf}
+}}}
+
+
+===== Разрезать *.pdf с 2-мя страницами на листе на 2 части =====
+1) Установить mutool
+{{{code: lang="sh" linenumbers="False"
+$ sudo apt install mupdf-tools
+}}}
+
+2) «Разрезать» на левую и правую половину:
+{{{code: lang="sh" linenumbers="False"
+$ mutool poster -x 2 исходник.pdf выход.pdf
+}}}
+
+3) «Разрезать» на верхнюю и нижнюю половину:
+{{{code: lang="sh" linenumbers="False"
+$ mutool poster -y 2 исходник.pdf выход.pdf
+}}}
+
+{{{code: lang="sh" linenumbers="False"
+# Пишут, что можно так:
+$ convert in.pdf -crop 50%x0 +repage out.pdf
+# Но выводит сообщение об ошибке
+}}}
+
+
+===== Конвертировать *.doc в *.pdf =====
+{{{code: lang="sh" linenumbers="False"
+$ lowriter --convert-to pdf *.doc
+# lowriter входит в состав LibreOffice
+}}}
+

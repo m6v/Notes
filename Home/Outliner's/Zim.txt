@@ -1,0 +1,32 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-23T17:49:21+03:00
+
+====== Zim ======
+Создан Понедельник 23 декабря 2019
+
+===== Ссылки =====
+https://zim-wiki.org/downloads
+https://github.com/zim-desktop-wiki/zim-desktop-wiki
+https://launchpad.net/~jaap.karssenberg/+archive/ubuntu/zim
+https://github.com/zim-desktop-wiki/zim-desktop-wiki/issues/157
+
+===== Установка под Python 3.7 =====
+{{{code: lang="sh" linenumbers="False"
+# возможно при установке из официального репозитория это не требуется (см. ниже)
+rm /usr/bin/python
+ln -s /usr/bin/python3.7 /usr/bin/python
+sudo apt install python3.7-dev
+
+sudo apt install python-apt # иначе не дает добавить ppa:jaap.karssenberg/zim
+ln -s ./apt_pkg.cpython-35m-x86_64-linux-gnu.so ./apt_pkg.cpython-37m-x86_64-linux-gnu.so
+ln -s ./_gi.cpython-35m-x86_64-linux-gnu.so ./_gi.cpython-37m-x86_64-linux-gnu.so
+ln -s ./_gi_cairo.cpython-35m-x86_64-linux-gnu.so ./_gi_cairo.cpython-37m-x86_64-linux-gnu.so
+
+# репозиторий с ежедневными коммитами из основной веткуи репозитория
+sudo add-apt-repository ppa:jaap.karssenberg/zim
+sudo apt install zim
+sudo apt-get install python-gtksourceview2 # это нужно для плагина форматирования исходного кода
+}}}
+
+

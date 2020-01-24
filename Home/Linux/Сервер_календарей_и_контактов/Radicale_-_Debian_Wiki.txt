@@ -1,0 +1,199 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-23T13:07:28+03:00
+
+====== Radicale - Debian Wiki ======
+Создан Четверг 23 Январь 2020
+
+Radicale is a Calendar and Address book Server. It's written in Python and implements the CalDAV and CardDAV standards.
+
+===== Installation on Buster =====
+
+Buster has Radicale 2.x. If you're updating from 1.x you have to migrate your calendars and address books.
+
+The recommended setup for production use is to serve system-wide by Apache via uWSGI with Apache-based authenticating. This is documented in the README.Debian.
+
+The following documents a more lightweight serving directly by Radicale. Note that this is discouraged and not well tested for production use. It follows the "simple but solid setup" instructions from radicale.org, adapted for the Debian packages.
+
+==== Install all packages ====
+
+{{{code: lang="sh" linenumbers="False"
+$ apt install radicale apache2-utils python3-bcrypt python3-passlib
+}}}
+
+
+==== Authentication ====
+Create a "users" file with all user names and passwords:
+
+{{{code: lang="sh" linenumbers="False"
+$ htpasswd -c -B /etc/radicale/users user
+$ htpasswd -B /etc/radicale/users user2
+}}}
+
+Then to set authentication to htpasswd with bcrypt encryption edit these instances in ''/etc/radicale/config'':
+
+'''
+[auth]
+type = htpasswd
+htpasswd_filename = /etc/radicale/users
+htpasswd_encryption = bcrypt
+'''
+
+
+==== Create essential directories ====
+The provided SysV init script should take care of this. Otherwise you can do it manually:
+{{{code: lang="sh" linenumbers="False"
+$ mkdir -p /var/lib/radicale
+$ chown radicale:radicale /var/lib/radicale
+$ chmod g-w,o-rwx /var/lib/radicale
+
+$ mkdir -p /var/log/radicale
+$ chown radicale:adm /var/log/radicale
+$ chmod g-w,o-rwx /var/log/radicale
+}}}
+
+
+==== Log to logfile ====
+For troubleshooting having a verbose logfile is very helpful.
+
+Enable it by changing ''/etc/radicale/config'' to have:
+
+'''
+[logging]
+config = /etc/radicale/logging
+'''
+
+
+Then configure it by changing these instances in ''/etc/radicale/logging'':
+
+'''
+[handlers]
+#keys = console
+keys = file
+
+[formatters]
+#keys = simple
+keys = full
+
+[logger_root]
+#level = WARNING
+#level = INFO
+level = DEBUG
+#handlers = console
+handlers = file
+
+[handler_file]
+class = FileHandler
+# Note: Debian logrotate handles /var/log/radicale/*.log, but not /var/log/radicale/log
+#       (the example given on radicale.org, including their own logfile rotation)
+args = ('/var/log/radicale/radicale.log',)
+formatter = full
+
+[formatter_full]
+format = %(asctime)s - [%(thread)x] %(levelname)s: %(message)s
+'''
+
+
+==== Host addresses and SSL ====
+Per default the radicale server is only reachable from localhost. To change this you can add other hostnames, e.g. the hostname of your machine in a local network. You may also configure radicale to encrypt traffic with SSL. After this change radicale will be available as https://localhost:5232 or e.g. https://hostname.local:5232.
+
+With ssl enabled Radicale tries to use your existing selfsigned certificate /etc/ssl/private/ssl-cert-snakeoil.key, which is not readable by the radicale user. So first change this and add the user radicale to the ssl-cert group:
+{{{code: lang="sh" linenumbers="False"
+$ usermod -a -G ssl-cert radicale
+}}}
+
+Then edit ''/etc/radicale/config'' to have these values:
+
+'''
+[server]
+hosts = 127.0.0.1:5232, hostname.local:5232
+ssl = true
+'''
+
+
+On your clients to connect to your radicale server you probably have to add an exception for this certificate, because it is self-signed and not "authorized" by a trusted 3rd party (SEC_ERROR_UNKNOWN_ISSUER).
+
+==== Run the simple radicale daemon automatically ====
+To finally activate the init script run:
+{{{code: lang="sh" linenumbers="False"
+$ update-rc.d radicale enable
+}}}
+
+Radicale will then start automatically at system boot. You can manually control it with:
+
+{{{code: lang="sh" linenumbers="False"
+$ service radicale start
+$ service radicale status
+$ service radicale stop
+}}}
+
+
+===== Installation on Stretch =====
+Documentation not written yet.
+
+Radicale Package on Stretch doesn't come with a systemd unit yet, so you might borrow one from Radicale website. If you do so, do not enable daemon in /etc/default/radicale since it makes use of init.d.
+
+===== Installation on Jessie =====
+{{{code: lang="sh" linenumbers="False"
+$ apt-get install radicale
+}}}
+
+Enable daemon in ''/etc/default/radicale''
+
+Start daemon with
+{{{code: lang="sh" linenumbers="False"
+$ service radicale start
+}}}
+
+direct your browser to "http://yourserver:5232". It should say "Radicale works!"
+
+===== Deliver Radicale through Apache =====
+The points above lead to a minimal installation. In a productive environment it's advised to install a dedicated webserver. This examples uses Apache.
+
+As we plan to let Apache start and manage Radicale, we go back to /etc/default/radicale and disable the daemon functionality there. Then we install the necessary packages
+{{{code: lang="sh" linenumbers="False"
+$ apt-get install apache2 libapache2-mod-wsgi
+}}}
+
+In /etc/apache2/sites-available/ we create a radicale.conf.
+
+'''
+<VirtualHost *:80>
+    ServerName example.com
+
+    WSGIDaemonProcess radicale user=www-data group=www-data threads=1
+    WSGIScriptAlias / /usr/share/radicale/radicale.wsgi
+
+    <Directory /usr/share/radicale>
+        WSGIProcessGroup radicale
+        WSGIApplicationGroup %{GLOBAL}
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+</VirtualHost>
+'''
+
+
+To enable this configuration and disable the default one we do
+
+{{{code: lang="sh" linenumbers="False"
+$ a2dissite 000-default.conf
+$ a2ensite radicale.conf
+}}}
+
+As we start Radicale with the www-data user we need to allow it to write to the log files.
+
+{{{code: lang="sh" linenumbers="False"
+$ mkdir -p /var/log/radicale/
+$ chown -R www-data /var/log/radicale/
+}}}
+
+The directory for the data also needs to be created (if it hasn't already) and the permissions applied to that.
+
+{{{code: lang="sh" linenumbers="False"
+$ mkdir -p /var/lib/radicale
+$ chown -R www-data /var/lib/radicale/
+}}}
+
+After restarting the service you should be able to reach the "Radicale Works!" page on port 80 of your server and port 5232 should not answer anymore.

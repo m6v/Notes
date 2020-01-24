@@ -1,0 +1,29 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-21T15:38:52+03:00
+
+====== Экспорт контактов из evolution ======
+Создан Вторник 21 Январь 2020
+
+Для экспорта контактов из evolution используется команда
+{{{code: lang="sh" linenumbers="False"
+/usr/lib/evolution/evolution-addressbook-export --format=vcard --output=contacts.vcf
+}}}
+
+
+Evolution, начиная с версии 3.6, хранит данные в соответствии со **спецификацией **[[../Спецификация_на_расположение_базовых_каталогов_(XDG).txt|XDG]]
+
+**Файлы данных пользователя**
+$HOME/.local/share/evolution
+
+**Различные файлы конфигурации и состояния**
+$HOME/.config/evolution
+
+**Настройки учетной записи**
+$HOME/.config/evolution/sources
+
+**Одноразовые кэши данных**
+$HOME/.cache/evolution
+
+**Дополнительные файлы конфигурации**
+$HOME/.config/dconf

@@ -1,0 +1,274 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-23T12:48:42+03:00
+
+====== How to install a CalDav and CardDav server using Radicale ======
+Создан Четверг 23 Январь 2020
+
+During my time at the university I had lots of meetings, events and I couldn’t remember all these events, so I had to write them down. But we’re living in a digital world, so I wanted to keep all my appointments digitally. I tried Thunderbird Lightning and it is a great Add On. But I also wanted to synchronize all these events with my smartphone without using an external cloud, e.g. Google Calendar.
+
+I wanted a small program with minimal dependencies to act as a server which is able to run on a Raspberry Pi. It doesn’t have to provide a web interface, because I can use Thunderbird or my smartphone to add, change or delete events. I found Radicale which is written in Python and has no dependencies. It supports the CalDav and CardDav protocol. That’s all I wanted so I gave it a try. My first impression was very good and it works great. Here are all steps I did to set up my own CalDav server with Radicale.
+
+1. Installation of Radicale
+2. Adding bcrypt support to Radicale (optional step)
+3. Configure Radicale
+4. Configure Thunderbird Lightning
+5. Configure Android Calendar
+
+===== 1. Installation of Radicale =====
+First of all we have to download Radicale. You can find all versions at the download page of Radicale.
+
+{{{code: lang="sh" linenumbers="False"
+$ wget http://pypi.python.org/packages/source/R/Radicale/Radicale-0.8.tar.gz
+}}}
+
+Next step is to extract the archive:
+
+{{{code: lang="sh" linenumbers="False"
+$ tar xzvf Radicale-0.8.tar.gz
+}}}
+
+Radicale supports a lot of authentication protocols, but I will use HTTP-Basic-Authentication. The Problem is that all used hashing algorithms are insecure. I found a simple way to add the bcrypt algorithm to Radicale which is considered to be very secure. If you want to use HTTP-Basic-Authentication with bcrypt go to step 2 and come back after you finished step 2.
+
+Last step of the installtion is to run setup.py
+
+{{{code: lang="sh" linenumbers="False"
+$ sudo python setup.py install
+}}}
+
+
+===== 2. Adding bcrypt support to Radicale (optional step) =====
+To use bcrypt in python you have to download and install the python bcrypt library. You can find the python bcrypt library here.
+
+{{{code: lang="sh" linenumbers="False"
+$ wget http://py-bcrypt.googlecode.com/files/py-bcrypt-0.4.tar.gz 
+}}}
+
+Extract the archive and install it:
+
+{{{code: lang="sh" linenumbers="False"
+$ tar xzvf py-bcrypt-0.4.tar.gz && cd py-bcrypt-0.4
+$ python setup.py build && python setup.py install
+}}}
+
+Now we can modify Radicale to support bcrypt. You only have to modify one file which is ''radicale/auth/htpasswd.py''
+Add the following line to the import section of the file:
+
+'''
+import bcrypt
+and add the following function to the same file:
+
+def _bcrypt(hash_value, password):
+    """Check if ``hash_value`` and ``password`` match using bcrypt method."""
+    hash_value = hash_value.encode("ascii")
+    password = password.encode(config.get("encoding", "stock"))
+    return bcrypt.checkpw(password, hash_value)
+'''
+
+
+Now Radicale is able to use bcrypt passwords.
+
+===== 3. Configure Radicale =====
+The configuration of Radicale is simple. You only have to change a few settings in the config file. In my case I created the directory ''/etc/radicale'' and copied the config file to this directory. Here is the config file that I use:
+
+'''
+# -*- mode: conf -*-
+# vim:ft=cfg
+
+# Config file for Radicale - A simple calendar server
+#
+# Place it into /etc/radicale/config (global) 
+# or ~/.config/radicale/config (user)
+#
+# The current values are the default ones
+
+
+[server]
+# CalDAV server hostnames separated by a comma
+# IPv4 syntax: address:port
+# IPv6 syntax: [address]:port
+# IPv6 adresses are configured to only allow IPv6 connections
+hosts = 0.0.0.0:5232
+# Daemon flag
+daemon = True 
+# File storing the PID in daemon mode
+pid = 
+# SSL flag, enable HTTPS protocol
+ssl = True 
+# SSL certificate path
+certificate = /etc/radicale/ssl/server.crt
+# SSL private key
+key = /etc/radicale/ssl/server.key
+# Reverse DNS to resolve client address in logs
+dns_lookup = True
+# Root URL of Radicale (starting and ending with a slash)
+base_prefix = /
+# Message displayed in the client when a password is needed
+realm = Radicale - Password Required
+
+
+[encoding]
+# Encoding for responding requests
+request = utf-8
+# Encoding for storing local collections
+stock = utf-8
+
+
+[auth]
+# Authentication method
+# Value: None | htpasswd | IMAP | LDAP | PAM | courier | http
+type = htpasswd 
+
+# Usernames used for public collections, separated by a comma
+public_users = public
+# Usernames used for private collections, separated by a comma
+private_users = private
+
+# Htpasswd filename
+htpasswd_filename = /etc/radicale/users
+# Htpasswd encryption method
+# Value: plain | sha1 | crypt | bcrypt
+htpasswd_encryption = bcrypt
+
+# LDAP server URL, with protocol and port
+ldap_url = ldap://localhost:389/
+# LDAP base path
+ldap_base = ou=users,dc=example,dc=com
+# LDAP login attribute
+ldap_attribute = uid
+# LDAP filter string
+# placed as X in a query of the form (&(...)X)
+# example: (objectCategory=Person)(objectClass=User)(memberOf=cn=calenderusers,ou=users,dc=example,dc=org)
+# leave empty if no additional filter is needed
+ldap_filter = 
+# LDAP dn for initial login, used if LDAP server does not allow anonymous searches
+# Leave empty if searches are anonymous
+ldap_binddn =
+# LDAP password for initial login, used with ldap_binddn
+ldap_password =
+# LDAP scope of the search
+ldap_scope = OneLevel
+
+# IMAP Configuration
+imap_hostname = localhost
+imap_port = 143
+imap_ssl = False
+
+# PAM group user should be member of
+pam_group_membership =
+
+# Path to the Courier Authdaemon socket
+courier_socket =
+
+# HTTP authentication request URL endpoint
+http_url =
+# POST parameter to use for username
+http_user_parameter =
+# POST parameter to use for password
+http_password_parameter =
+
+
+[rights]
+# Rights management method
+# Value: None | owner_only | owner_write | from_file
+type = owner_only
+
+# File for rights management from_file
+file = ~/rights
+
+
+[storage]
+# Storage backend
+# Value: filesystem | database
+type = filesystem
+
+# Folder for storing local collections, created if not present
+filesystem_folder = ~/collections
+
+# Database URL for SQLAlchemy
+# dialect+driver://user:password@host/dbname[?key=value..]
+# For example: sqlite:///var/db/radicale.db, postgresql://user:password@localhost/radicale
+# See http://docs.sqlalchemy.org/en/rel_0_8/core/engines.html#sqlalchemy.create_engine
+database_url =
+
+
+[logging]
+# Logging configuration file
+# If no config is given, simple information is printed on the standard output
+# For more information about the syntax of the configuration file, see:
+# http://docs.python.org/library/logging.config.html
+config = /etc/radicale/logging
+# Set the default logging level to debug
+debug = False 
+# Store all environment variables (including those set in the shell)
+full_environment = False
+
+
+# Additional HTTP headers
+#[headers]
+#Access-Control-Allow-Origin = *
+'''
+
+
+The next step is to create a user for Radicale. This is just for security reasons, Radicale will run with the permissions of this user. I created a user radicale and a group radicale. All calendars and contacts will be stored in the home directory of this user (if you use the config file above). The following command creates the user radicale and adds it to the group radicale.
+
+{{{code: lang="sh" linenumbers="False"
+$ useradd -d /home/radicale/ -U -m -p PASSWORD radicale
+}}}
+
+One of the last steps is to create the users file which contains all login credentials. I saved the users file in /etc/radicale. If you don’t want to use bcrypt, you can use the htpasswd command to create a password file. The following example creates the file users and adds the user funkym0nk3y. You have to enter the password which will be hashed with SHA-1 (in this case).
+
+{{{code: lang="sh" linenumbers="False"
+$ htpasswd -cs ./users funkym0nk3y
+}}}
+
+I neither recommend using plaintext passwords nor hashed passwords with SHA-1 or crypt. The best way is to add the bcrypt hashing algorithm. You can use the following python script to hash a password using bcrypt. It will create the hashed password and output USERNAME:HASHED_PASSWORD
+
+'''
+#!/usr/bin/env python
+import bcrypt
+from optparse import OptionParser
+
+parser = OptionParser()
+parser.add_option("-u", "--user", dest="username", help="Username")
+parser.add_option("-p", "--password", dest="password", 
+                  help="Password which will be hashed using bcrypt")
+parser.add_option("-w", "--workfactor", dest="workfactor", default="12",
+                  help="Workfactor of bcrypt, the higher the more secure")
+
+(options, args) = parser.parse_args()
+if options.username == None or options.password == None:
+	parser.print_help()
+else:
+	hashed = bcrypt.hashpw(options.password,
+                               bcrypt.gensalt(int(options.workfactor)))
+	print "%s:%s" % (options.username,hashed)
+'''
+
+
+This script is also available at Github.
+
+The last step is to create a server key and a server certificate to use encrypted connections. You can use a self signed certificate (use the commands below to create a self-signed certificate). Don’t encrypt the key, because then you would have to enter the password each time a client connects to the server.
+
+{{{code: lang="sh" linenumbers="False"
+$ openssl genrsa -out server.key 1024
+$ openssl req -new -x509 -days 365 -key server.key -out server.crt
+}}}
+
+If you want a certificate signed by a Certificate Authority (CA) you can take a look at this Post. It explains all steps to create your own Certificate Authority.
+
+To start Radicale change the user to radicale and enter radicale to start the server.
+
+===== 4. Configure Thunderbird Lightning =====
+Start Thunderbird and go to File -> New -> Calendar
+Choose the option “On the Network” and click Next. Select “CalDav” and enter the address to the calendar, e.g. https://COMPUTERNAME:5232/funkym0nk3y/calendar.ics. If the calendar does not exist, radicale will create it. Click Next and enter the name of the calendar, choose a color and click Next. You will get a message: “Your calendar has been created”.
+You have to enter the username and the password.
+
+
+===== 5. Configure Android Calendar =====
+The Android calendar is not able to sync all events with CalDav servers. I installed CalDavSync to add this feature. You can find a CalDavSync App here: CalDavSyncAdapter
+I’ve tested this app and it works for me.
+
+To sync your Android calendar with the server go to the calendar app and then
+Settings -> Calendar -> Add Account -> CalDav Sync Adapter
+Enter the login credentials and the url to your calendar.

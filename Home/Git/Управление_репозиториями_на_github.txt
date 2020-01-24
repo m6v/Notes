@@ -1,0 +1,122 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-24T08:58:58+03:00
+
+====== Управление репозиториями на github ======
+Создан Пятница 24 Январь 2020
+
+===== Управление с помощью веб-интерфейса =====
+
+==== Создание репозитория ====
+Нажать кнопку New
+
+{{./pasted_image007.png}}
+
+Ввести имя репозитория, выбрать требуемые опции и нажать кнопку Create repository
+{{./pasted_image008.png}}
+
+На вкладке Code будут подсказки по работе с репозиторием
+{{./pasted_image009.png}}
+
+==== Переименование репозитория ====
+Перейти на вкладку Settings, в поле Repository name ввести новое имя и нажать кнопку Rename
+
+{{./pasted_image010.png}}
+
+==== Удаление репозитория ====
+Открыть репозиторий
+{{./pasted_image003.png}}
+
+Открыть вкладку Settings
+{{./pasted_image004.png}}
+
+Прокрутить страницу вниз и в разделе Danger Zone нажать кнопку Delete this repositury
+{{./pasted_image002.png}}
+
+В появившемся окне ввести имя пользователя и название репозитория и нажать кнопку I understand the consequences, delete this repository
+{{./pasted_image006.png}}
+
+===== Управление из коммандной строки =====
+
+==== Создание персонального токена авторизации ====
+
+Выбрать меню ''Settings -> Developer settings -> Personal access tokens''
+
+{{./pasted_image017.png}}
+
+Нажать кнопку ''Generate new token'', задать необходимые разрешения и нажать кнопку ''Generate token''
+{{./pasted_image018.png}}
+Созданный токен будет отображен в списке ''Personal access tokens''
+{{./pasted_image019.png}}
+
+Выбрать созданный токен и нажать кнопку ''Regenerate token''
+{{./pasted_image020.png}}
+
+Сохранить сгенерированный токен, т.к. больше он отображаться не будет и нажать кнопку ''Update token''.
+{{./pasted_image021.png}}
+
+
+# обозначения
+<UserName> - имя пользователя;
+<RepoName> - имя репозитория;
+<Token> - токен с правами на создание, удаление репозиториев (см.: https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line).
+
+Получение списка репозиториев
+curl -s -u 'm6v' https://api.github.com/user/repos | grep -o 'git@[^"]*'
+
+Ввести пароль пользователя GitHub
+Enter host password for user 'm6v':
+
+
+
+==== Создание нового репозитория ====
+
+{{{code: lang="sh" linenumbers="False"
+$ curl -u '<UserName>' https://api.github.com/user/repos -d '{"name":"<RepoName>"}'
+# или
+$ curl -i -H 'Authorization: token <Token>' -d '{"name":"<RepoName>"}' https://api.github.com/user/repos
+}}}
+
+, где <UserName> - имя пользователя (m6v)
+	<RepoName> - имя удаленного репозитория
+
+
+==== Переименование репозитория ====
+
+{{{code: lang="sh" linenumbers="False"
+$ curl -i -H 'Authorization: token <Token>' -X PATCH -d '{"name":"<NewRepoName>"}' https://api.github.com/repos/<UserName>/<OldRepoName>
+}}}
+
+
+==== Удаление репозитория ====
+
+{{{code: lang="sh" linenumbers="False"
+$ curl -i -H 'Authorization: token <Token>' -X 'DELETE' 'https://api.github.com/repos/<UserName>/<RepoName>'
+}}}
+
+, где <Token> - токен (с правами на удаление репозиториев, про создание см. https://medium.com/analytics-vidhya/delete-all-unused-github-repositories-using-github-api-18ea4d17b8e9)
+
+===== Подключение к github по ssh =====
+В главном меню git выбрать элемент ''Settings''
+{{./pasted_image011.png}}
+
+Открыть вкладку ''SSH and GPG keys'' и нажать кнопку ''New SSH key''
+{{./pasted_image012.png}}
+
+Нажать кнопку ''New SSH key'', ввести название ключа, скопировать содержимое ключа в поле ''Key'' и нажать кнопку ''Add SSH key''
+{{./pasted_image013.png}}
+
+Добавленный ключ должен появиться в поле ''SSH keys''
+{{./pasted_image014.png}}
+
+==== Тестируем подключение к GitHub ====
+{{{code: lang="sh" linenumbers="False"
+ssh -T git@github.com
+}}}
+
+''Hi m6v! You've successfully authenticated, but GitHub does not provide shell access.''
+
+Создание 
+
+{{./pasted_image015.png}}
+

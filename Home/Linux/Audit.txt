@@ -1,0 +1,15 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-24T12:10:34+03:00
+
+====== Audit ======
+Создан Вторник 24 Декабрь 2019
+
+см.:
+**The Geek Diary**[[https://www.thegeekdiary.com/category/linux/|:]]
+[[https://www.thegeekdiary.com/audit-rules-for-monitoring-copy-move-delete-and-kill-commands-in-linux/|Audit rules for monitoring Copy, move, delete and kill Commands In Linux]]
+
+[[./Лучшие инструменты аудита безопасности Linux.pdf|Лучшие инструменты аудита безопасности Linux]]
+[[./Аудит системных событий в Linux.pdf|Аудит системных событий в Linux]]
+[[./Пингвин под колпаком. Аудит системных событий в Linux.pdf|Пингвин под колпаком. Аудит системных событий в Linux]]
+

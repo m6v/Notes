@@ -1,0 +1,94 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-22T12:29:14+03:00
+
+====== Органайзер osmo ======
+Создан Среда 22 Январь 2020
+
+[[../Органайзер Osmo для Linux.pdf|Органайзер Osmo для Linux]]
+
+Визуально отличий между версиями 0.4 и 0.2 почти нет (изменен диалог выбора шрифтов). 
+
+Новые версии доступны по url:
+https://sourceforge.net/projects/osmo-pim/files/osmo-pim/
+но при ./configure выдает ошибку
+No package 'gtk+-3.0' found
+*** Could not run GTK+ test program, checking why...
+*** The test program failed to compile or link. See the file config.log for the
+*** exact error that occured. This usually means GTK+ is incorrectly installed.
+configure: error: GTK+ not found or too old (version < 3.10)
+
+*.deb пакет можно скачать с https://packages.ubuntu.com/artful/amd64/osmo/download
+
+Для установки в Ubuntu 16.04 требуются библиотеки (возможно в Ubuntu 18.04 уже есть)
+libicu57 (https://packages.ubuntu.com/artful/amd64/libicu57/download)
+и
+libical2 (https://packages.ubuntu.com/artful/libical2)
+
+При установке ругается:
+N: Невозможно сбросить права для скачивания, так как файл «/home/maksimov/Downloads/libicu57_57.1-6_amd64.deb» недоступен для пользователя «_apt». - pkgAcquire::Run (13: Отказано в доступе)
+N: Невозможно сбросить права для скачивания, так как файл «/home/maksimov/Downloads/libical2_2.0.0-0.5_amd64.deb» недоступен для пользователя «_apt». - pkgAcquire::Run (13: Отказано в доступе)
+N: Невозможно сбросить права для скачивания, так как файл «/home/maksimov/Downloads/osmo_0.4.0-2_amd64.deb» недоступен для пользователя «_apt». - pkgAcquire::Run (13: Отказано в доступе)
+
+В версии 4.0 изменено расположение каталогов с конфигами и данными (учесть при синхронизации):
+данные в ~/.local/share/osmo
+конфиги в ~/.config/osmo
+
+===== Синхронизация с сервером =====
+
+Для синхронизации можно использовать rsync:
+# для osmo 2.0
+rsync -zavP ~/.osmo maksimov@maksimov.spb.ru:~/
+# для osmo 4.0
+rsync -zavP  ~/.local/share/osmo maksimov@maksimov.spb.ru:~/.local/share/
+# конфиг в принципе можно и не синхронизировать
+rsync -zavP ~/.config/osmo maksimov@maksimov.spb.ru:~/.config/
+
+Если используется нестандартный порт ssh, то:
+rsync -zavP '-e ssh -p 12345' ~/.osmo maksimov@maksimov.spb.ru:~/
+
+По умолчанию, Rsync ничего не удаляет из каталога назначения. Следовательно, необходимо удалить файлы из каталога назначения, если они удаляются из  исходного каталога, чтобы сохранить полную синхронизацию каталогов.
+
+Такое поведение можно изменить с помощью флага «—delete». Прежде чем применять данный флаг, используйте команду «—dry-run» и проведите тестирование, чтобы предотвратить потерю данных.
+
+rsync -a --delete-after source destination
+
+Для синхронизации в обратную сторону:
+# для osmo 2.0
+rsync -zavP maksimov@maksimov.spb.ru:~/.osmo ~/
+# для osmo 4.0
+rsync -zavP maksimov@maksimov.spb.ru:~/.local/share/osmo ~/.local/share/
+# конфиг в принципе можно и не синхронизировать
+rsync -zavP maksimov@maksimov.spb.ru:~/.config/osmo ~/.config/
+
+Порядок действий:
+1) при запуске osmo синхронизируем данные от сервера клиенту.
+2) с помощью inotifywait отслеживаем изменения в ~/.local/share/osmo, если изменения есть, то создаем файл osmosyncrequre.
+3) с помощью cron запускаем скрипт, отслеживающий наличие файла osmosyncrequre. Если файл существует, то делаем синхронизацию и удаляем его.
+
+Другой вариант синхронизации - сделать симлинк для каталога ~/.osmo куда-нибудь в облако или на сервер, но в этом случае будет требоваться постоянное подключение.
+
+Скрипт отслеживания изменений в каталоге osmo запускается при старте системы
+#!/bin/bash
+SRC_DIR="/home/maksimov/.local/share/osmo"
+#синхронизация с сервером при запуске скрипта
+echo "Osmo synchronization started"
+rsync -zavP maksimov@maksimov.spb.ru:~/.local/share/osmo ~/.local/share/
+echo "Osmo synchronization done"
+inotifywait -e close --format '%w %f' -m -r $SRC_DIR |\
+(
+while read
+do
+	#Создаем файл
+	touch /home/maksimov/.local/share/osmo/osmosyncrequre
+done
+)
+
+Скрипт синхронизации osmosync.sh запускается через cron
+#!/bin/bash
+if [ -f "/home/maksimov/.local/share/osmo/osmosyncrequre" ]; then 
+	echo "Osmo synchronization started"
+	rm -f /home/maksimov/.local/share/osmo/osmosyncrequre
+	rsync -zavP  ~/.local/share/osmo maksimov@maksimov.spb.ru:~/.local/share/
+	echo "Osmo synchronization done"
+fi

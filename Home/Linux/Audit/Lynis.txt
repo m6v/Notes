@@ -1,0 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-20T13:32:32+03:00
+
+====== Lynis ======
+Создан Понедельник 20 Январь 2020
+
+[[https://cisofy.com/downloads/lynis-plugins-community|Download Lynis Plugins (Community)]]

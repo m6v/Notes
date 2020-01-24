@@ -1,0 +1,74 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-24T12:19:53+03:00
+
+====== How to copy directories recursively using rsync while excluding specific files ======
+Создан Вторник 24 Декабрь 2019
+
+In general, we use ‘cp’ command to copy files, but unfortunately, ‘cp’ command doesn’t have the “exclude” feature, so we need to write some scripts to exclude the unwanted files, or we can use another tool ‘rsync’.
+
+From the man page of rsync command:
+
+'''
+$ man rsync
+...
+  -r, --recursive             recurse into directories
+  --exclude=PATTERN           exclude files matching PATTERN
+'''
+
+
+The syntax of rsync command to copy directories while excluding specific file/directories is as shown below:
+
+	''$ rsync -r --exclude 'file_path' 'SRC' 'DEST'''
+
+For example, if we don’t want to copy all files of oracle folder to oraclebak except ‘oracle/oradata/rmanbackup’:
+
+'''
+$ du -sh oracle/*
+40K oracle/extapi
+1.1G oracle/oradata                    ------> sub directory of oracle
+4.0K oracle/test1
+4.0K oracle/test2
+4.0K oracle/test3
+4.0K oracle/test4
+4.0K oracle/test5
+
+# du -sh oracle/oradata/*
+4.0K oracle/oradata/date1
+4.0K oracle/oradata/date2
+4.0K oracle/oradata/date3
+4.0K oracle/oradata/date4
+4.0K oracle/oradata/date5
+1.1G oracle/oradata/rmanbackup  -------> we need to exclude this directory
+'''
+
+
+The exclude path is the relative path of the file under ‘SRC’, e.g. we want to exclude “oracle/oradata/rmanbackup”, and the parent direcotory is oracle, so the exclude path is ‘oradata/rmanbackup’:
+
+'''
+# rsync -r --exclude 'oradata/rmanbackup' oracle/ oraclebak
+# du -sh oraclebak/oracle/*
+40K oraclebak/oracle/extapi
+24K oraclebak/oracle/oradata
+4.0K oraclebak/oracle/test1
+4.0K oraclebak/oracle/test2
+4.0K oraclebak/oracle/test3
+4.0K oraclebak/oracle/test4
+4.0K oraclebak/oracle/test5
+'''
+
+
+You can also use the option “–exclude-from=FILE ” if you have more files/directories to be excluded. In that case, you just have to list out the files/directories to be excluded in a file and provide the file path to the option “–exclude-from=”
+
+'''
+# man rsync
+--exclude-from=FILE     read exclude patterns from FILE
+'''
+
+
+For example:
+
+	''# rsync -r --exclude-file=/tmp/exclude_list oracle/ oraclebak''
+
+Here,
+/tmp/exclude_list contains a list of files/directories to be excluded while copying the others.

@@ -1,0 +1,224 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-27T21:33:25+03:00
+
+====== Использование программы ssh-agent ======
+Создан Пятница 27 декабря 2019
+
+В целях безопасности, приватный ключ, всегда должен быть защищен секретной фразой ( паролем ), но это вызывает некоторые неудобства, т.к. вводить секретную фразу придется, каждый раз при подключении к удаленному серверу по ключу. Гораздо проще ввести пароль на ключ один раз и пользоваться им сколько потребуется. На этот случай в пакете OpenSSH, существуют специальные программы **ssh-agent** и **ssh-add**, в общем-то вторая является дополнением первой.
+
+Как это работает. Поле запуска программы ssh-agent, в нее добавляются расшифрованные ключи, то есть при добавлении она запросит секретную фразу ключа, для его дешифровки, и далее ssh-agent, будет выдавать уже расшифрованные ключи по запросу, например программе SSH.
+
+Запускать ssh-agent, можно двумя способами, со специальной опцией, говорящей, какой тип оболочки используется, или с помощью команды eval. Принципиальной разницы как его запускать, нет, просто в случае с опцией, вы должны точно знать, какую оболочку вы используете.
+
+ssh-agent -c
+	Если в качестве оболочки используется С — Shell
+ssh-agent -s
+	Если в качестве оболочки используется Bourne Shell
+eval `ssh-agent`
+	В таком варианте запущенный ssh-agent, будет передан команде eval, которая выполнит его в текущей оболочке. Обратите внимание, используются обратные кавычки а не обычные !
+
+Итак, запускаем ssh-agent:
+{{{code: lang="sh" linenumbers="False"
+$ eval `ssh-agent` # обязательно обратные апострофы!
+}}}
+
+	
+	''Agent pid 1982''
+
+При запуске, ssh-agent создает переменные окружения, проверим какие:
+
+{{{code: lang="sh" linenumbers="False"
+$ env | grep SSH_A
+}}}
+
+
+	SSH_AUTH_SOCK=/tmp/ssh-SDsJ40ZCSk2u/agent.11490
+
+в этой переменной хранится сокет, через который программа ssh, будет связываться с ssh-agent.
+
+	SSH_AGENT_PID=1982
+
+это PID процесса ssh-agent
+
+Теперь нужно поместить в него расшифрованные ключи, делается это с помощью программы ssh-add.
+
+Если запустить ее без аргументов, будут добавлены все ключи, найденные в стандартных местах их размещения, то есть будут просканированы следующие файлы, ~/.ssh/identify, ~/.ssh/id_rsa и /.ssh/id_dsa. Если ключ защищен парольной фразой, программа попросит ввести ее, что-бы расшифровать ключ и загрузить уже готовый к применению.
+
+{{{code: lang="sh" linenumbers="False"
+$ ssh-add
+}}}
+
+
+'''
+Enter passphrase for /root/.ssh/id_rsa: Запрос пароля на расшифровку
+Identity added: /root/.ssh/id_rsa (/root/.ssh/id_rsa)
+'''
+
+
+Теперь пробуем подключиться к удаленному SSH серверу:
+
+{{{code: lang="sh" linenumbers="False"
+$ ssh 192.168.50.50
+}}}
+
+
+'''
+Last login: Tue Jul 7 18:45:27 2009 from .host.
+Copyright (c) 1980, 1983, 1986, 1988, 1990, 1991, 1993, 1994
+The Regents of the University of California. All rights reserved.
+
+FreeBSD 7.1-STABLE (SMP_KERNEL) #1: Tue Mar 10 18:14:59 UTC 2009
+Welcome to FreeBSD!
+'''
+
+
+Как видите пароль у нас больше никто не спрашивает, программа SSH, получает уже расшифрованный ключ от ssh-agent и мы успешно подключаемся к удаленному SSH серверу.
+
+Посмотреть отпечатки загруженных в ssh-agent ключей, можно той-же командой ssh-add с опцией -l, или целиком ключи, опцией -L.
+
+{{{code: lang="sh" linenumbers="False"
+$ ssh-add -l
+}}}
+
+	
+	4096 56:79:b5:61:ea:19:70:13:a4:67:a2:af:15:11:db:b5 /root/.ssh/id_rsa (RSA)
+
+{{{code: lang="sh" linenumbers="False"
+ssh-add -L
+}}}
+
+
+'''
+ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEArL0hIMmhw8rXeg0p72+EJXnC4iAY2XTkPAdTb3LnQb9bc0E5wvd
+cwCdNEtLlDIDCH+z0I1FaP3TfpvgVkv59X15TaNIeoB7uydqXvlLMOxpOJkfbc3eiA6a07PvZHMKXcIA0ZZ9+j12u
+l+HsGOK2qMQ5g52mOc6BOF1PVuoHfTR1C9nExv5UCA6h7e/v2wxq79pMW07nx7nshB5/1n5Gnyx+toQEzRiFbf
+zOJBB1ry/9NUF1DiBwOhKJVdEJBTUi0hyh/e77UAmVtkguEtjrsDEdxJ31sV21SL97EZHymMjRPjwU2nWjRkHf0Pi7
+dlXBoCKRj3dQps38kwFd3m9Tu4+hXSnsF8FdxkX5y9XmN8Uz8UWR6O2zslr7xZubkDR3aCq1dtcbu2nkvC4+Vy
+TOxEdnaNqDlC6U6G6aUVKFc0Rb5dcPnqpKqUHWE8MlXq/obKMRjuSz+GOr1VgRe/wZM7/0GoO1Xrv2MDMhS+
+S1uR+XkHkQr/EjTSxPiDZ92snZhtiyPIzTUZDOmclWHbe4gyvxDtU3Lxqzl3t1+Murg4sN1NrkZIHefMq2xeCOS8P
+bI89b3zJG2PJ3i2PSsOMviqIBOL3BBskGSWksJKi/YvvKwrlKaSM10wMZTbXHomgu+6jRd7cZtUOmU/FO0IoKejB
+MwuYbcPC+TCWBks0phU= /root/.ssh/id_rsa
+'''
+
+
+Загружен один ключ, по которому мы подключались к удаленной машине. Кроме этого, при запуске ssh-add, можно указать путь до конкретного ключа, который необходимо загрузить, например:
+
+{{{code: lang="sh" linenumbers="False"
+$ ssh-add /root/.ssh/id_rsa.new1
+}}}
+
+
+'''
+Enter passphrase for /root/.ssh/id_rsa.new1:
+Identity added: /root/.ssh/id_rsa.new1 (/root/.ssh/id_rsa.new1)
+'''
+
+
+Проверяем, что у нас теперь в ssh-agent:
+
+{{{code: lang="sh" linenumbers="False"
+ ssh-add -l
+}}}
+
+
+'''
+4096 56:79:b5:61:ea:19:70:13:a4:67:a2:af:15:11:db:b5 /root/.ssh/id_rsa (RSA)
+2048 68:81:38:fe:66:e8:05:88:8b:49:80:d2:d1:8b:bf:99 /root/.ssh/id_rsa.new1 (RSA)
+Загружено уже 2 ключа
+'''
+
+
+Удаляются ключи из ssh-agent, так-же просто как и добавляются, для этого используется опция -d, без параметров, для удаления стандартных ключей, опция -d файл_ключа, если нужно удалить конкретный ключ, или опция -D, для удаления всех ключей, например:
+
+{{{code: lang="sh" linenumbers="False"
+$ ssh-add -l
+}}}
+
+
+'''
+4096 56:79:b5:61:ea:19:70:13:a4:67:a2:af:15:11:db:b5 id_rsa (RSA)
+2048 68:81:38:fe:66:e8:05:88:8b:49:80:d2:d1:8b:bf:99 id_rsa.new1 (RSA)
+2048 c7:9f:b1:3b:c1:d0:61:15:38:27:d1:36:a7:49:55:cd id_rsa.new2 (RSA)
+'''
+
+
+{{{code: lang="sh" linenumbers="False"
+$ ssh-add -d id_rsa.new2
+}}}
+
+
+	''Identity removed: id_rsa.new2 (id_rsa.new2.pub)''
+
+{{{code: lang="sh" linenumbers="False"
+$ ssh-add -l
+}}}
+
+
+'''
+4096 56:79:b5:61:ea:19:70:13:a4:67:a2:af:15:11:db:b5 id_rsa (RSA)
+2048 68:81:38:fe:66:e8:05:88:8b:49:80:d2:d1:8b:bf:99 id_rsa.new1 (RSA)
+'''
+
+
+{{{code: lang="sh" linenumbers="False"
+$ ssh-add -D
+}}}
+
+
+'''
+All identities removed.
+vds-admin /root/.ssh# ssh-add -l
+The agent has no identities.
+'''
+
+
+Приведу список самых используемых опций программы ssh-add:
+
+ssh-add
+	Без опций, добавляются стандартные ключи
+ssh-add имя файла
+	Добавляются конкретный ключ
+-l
+	Показывает отпечатки всех загруженных в данный момент ключей
+-L
+	Посмотреть список самих ключей
+-D
+	Из ssh-agent, будут удалены все ключи
+-d имя файла
+	Удаляет конкретный ключ
+-t
+	Установить время жизни ключей, через данный промежуток времени ключи будут выгружены.
+-x
+	Заблокировать ssh-agent паролем
+-X
+	Разблокировать ssh-agent
+
+Что-бы закрыть ssh-agent, можно вызвать его c опцией -k, ну или на крайний случай прибить сигналом, например kill -QUIT PID, но это крайняя мера и при корректном запуске, это не потребуется:
+
+{{{code: lang="sh" linenumbers="False"
+$ ssh-agent -k
+}}}
+
+ 
+'''
+unsetenv SSH_AUTH_SOCK;
+unsetenv SSH_AGENT_PID;
+echo Agent pid 1982 killed;
+'''
+
+
+Как видите произошел обратный процесс, переменные очищены, процесс убит.
+
+==== Форвардинг ssh-agent ====
+
+Форвардинг агента включается в файле конфигурации клиента SSH, директивой ForwardAgent yes. Как это работает. Вы запускаете ssh-agent на локальной машине, загружаете ключи, подключаетесь к удаленному SSH серверу, сервер создает обратное перенаправление через созданный SSH туннель к вашему ssh-agent и вы можете использовать загруженные в него ключи для последующих соединений.
+Для примера, с локального хоста, Local_host, подключаемся к удаленной машине Remote_host, по каким-то причинам, нам понадобилось что-то посмотреть на еще одном хосте, Next_remote_host, что происходит в таком случае:
+
+Клиент ssh c Local_host, подключается к SSH серверу, Remote_host, и запрашивает форвардинг для ssh-agent
+Сервер SSH, /usr/sbin/sshd, хоста Remote_host, создает сокет в /tmp/ssh-XXXXXXX/agent.##### и устанавливает переменную окружения SSH_AUTH_SOCK, присваивая ей путь к сокету.
+Когда нам понадобится подключиться к следующему серверу, ( мы сейчас на сервере Remote_host ), SSH клиент хоста Remote_host, обращается по пути, лежащему в переменной SSH_AUTH_SOCK, то есть к сокету.
+SSH сервер, находящийся на другом конце сокета /tmp/ssh-XXXXXXX/agent.#####, передает данные из ssh, сервера Remote_host, на ssh-agent, запущенный на хосте Local_host. Вся работа с ключами происходит на машине Local_host а не на машинах, на которых вы регистрируетесь в процессе работы.
+Теперь с хоста Remote_host, вы можете подключиться к хосту Next_remote_host, используя ключи, загруженные в ssh-agent, на хосте Local_host.
+
+Это только на первый взгляд сложно выглядит, вся эта схема работает абсолютно прозрачно для пользователя, от него требуется только соответствующим образом настроить /etc/ssh/ssh_config а дплее все просто. Собственно тут даже показывать нечего в качестве примера.

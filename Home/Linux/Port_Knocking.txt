@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-27T11:09:28+03:00
+
+====== Port Knocking ======
+Создан Пятница 27 Декабрь 2019
+
+[[../Защита сервера при помощи Port Knocking.pdf|Защита сервера при помощи Port Knocking]]
+[[../Port knocking или как обезопасить себя от брута по ssh.pdf|Port knocking или как обезопасить себя от брута по ssh]]
+[[../Позади закрытых дверей. Port knoсking.pdf|Позади закрытых дверей. Port knoсking]]

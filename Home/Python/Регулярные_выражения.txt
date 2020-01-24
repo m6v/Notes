@@ -1,0 +1,10 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-20T10:58:14+03:00
+
+====== Регулярные выражения ======
+Создан Понедельник 20 Январь 2020
+
+[[../Регулярные выражения в Python от простого к сложному.pdf|Регулярные выражения в Python от простого к сложному.pdf]]
+[[https://regex101.com/|Онлайн калькулятор регулярных выражений]]
+[[https://learn.javascript.ru/regular-expressions|regular-expressions]]

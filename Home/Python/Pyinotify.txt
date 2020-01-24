@@ -1,0 +1,9 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-20T13:29:39+03:00
+
+====== Pyinotify ======
+Создан Понедельник 20 Январь 2020
+
+[[https://www.programcreek.com/python/example/77415/pyinotify.ProcessEvent|Python pyinotify.ProcessEvent() Examples]]
+[[https://github.com/seb-m/pyinotify/wiki/Tutorial|Tutorial]]

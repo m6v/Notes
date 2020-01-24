@@ -1,0 +1,130 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-20T10:24:36+03:00
+
+====== How to create custom tests in Lynis ======
+Создан Понедельник 20 Январь 2020
+
+[[https://cisofy.com/documentation/lynis/|Lynis Documentation]]
+
+===== Custom tests in Lynis =====
+
+Although Lynis has many tests built-in, there are enough reasons to create your own custom tests. Instead of patching up existing files, there is a better way to run them and make use of existing functions. In this article we will have a look on how to create your own tests and what functions can be used. With the software being open source and licensed under GPL, you have the flexibility to see existing tests and adjust them to your needs.
+
+==== Creating tests ====
+
+Creating custom tests is easy, as the toolkit of Lynis is written in shell script. So there is a lot of examples available in the already existing tests. To make it even easier, there is a small template available, which is named tests_custom.template and located in the include directory.
+
+First step is to copy this file and name it tests_custom.
+
+{{{code: lang="sh" linenumbers="False"
+# cd include
+# cp tests_custom.template tests_custom
+}}}
+
+Within this template there is an example test defined.
+
+{{{code: lang="sh" linenumbers="False"
+# Test        : CUST-0010
+    # Description : Check for something interesting - template
+    #               This test first checks if OpenSSL binary was found
+    if [ ! -z "${OPENSSLBINARY}" ]; then PREQS_MET="YES"; else PREQS_MET="NO"; fi
+    Register --test-no CUST-0010 --preqs-met ${PREQS_MET} --weight L --network NO --description "My description"
+    # Or you could use this one without any dependencies
+    # Register --test-no CUST-0010 --weight L --network NO --description "My description"
+    if [ ${SKIPTEST} -eq 0 ]; then
+        FOUND=0
+        logtext "Test: checking something"
+        ReportWarning ${TEST_NO} "Test warning"
+        if [ ${FOUND} -eq 0 ]; then
+            Display --indent 4 --text "- Performing custom test 1" --result OK --color GREEN
+            logtext "Result: the test looks great!"
+        else
+            Display --indent 4 --text "- Performing custom test 1" --result WARNING --color RED
+            logtext "Result: hmm bad result of this test :("
+            ReportSuggestion ${TEST_NO} "This could be better!"
+        fi
+    fi
+}}}
+
+
+==== Prerequisites ====
+
+This test start with checking if the OPENSSLBINARY variable has been set (“! -z” means is it not zero or empty). If it is set, then the prerequisites of this particular test have been set and checking when using the Register function.
+
+When no prerequisites apply, remove the parameter from the Register function.
+
+==== Register the test ====
+
+The Register function actually registers the related test and determines if there are any reasons to skip the test. If not, the variable SKIPTEST will be set to 0.
+
+This function needs at least the test-no, weight, network and description.
+
+With the –test-no we define an unique identifier for your test. Use always “CUST-” followed by a four-digit number.
+
+The –weight defines how important the test is, using L (low), M (medium) or H (high). When unsure, use M. By using the –network parameter, you can define if it needs network access, or not. Most tests won’t use any network function, so it is safe to use “NO” as a default value.
+
+Tips for tests
+From here on your test can do everything which is allowed in shell scripting. Run commands and test configuration files.
+
+We suggest to avoid “exotic” commands and use as much bourne scripting (not bourne again, or bash). The reason is portability and it avoids that you have to add additional checks. When using commands which are not on the system, it may result in unexpected outcomes or errors on screen.
+
+Make sure to initialize any variables which you will reuse at a later stage. For example, we use COUNT and FOUND a lot. We initialize those values to zero at the beginning of each test where it is used. The reason is to avoid a false positive in a test running at a later stage.
+
+===== Testing your custom tests =====
+When you are done with adding your tests, you can easily test them by only running the custom category.
+
+{{{code: lang="sh" linenumbers="False"
+./lynis audit systems --tests-category "custom"
+}}}
+
+After running Lynis again, it should show your custom test(s) and the related result. For example after enabling the test in the template:
+
+{{./pasted_image.png}}
+Output of custom test in Lynis
+
+===== Common functions =====
+
+During the creation of your own tests, you can reuse existing functions. These will simplify the way data is logged to a log file, or displayed on screen.
+
+==== Display ====
+
+The Display function shows text on screen.
+
+It uses at least the indent and text parameters. Optionally are the result and related color of the result.
+
+Usage: Display –indent <number of spaces> –text “Your personal text” –result “<status>” –color “<color code>”
+
+The status usually is something like OK, Found, BAD, NONE, where color is one of the colors defined in the include/consts file.
+
+==== logtext ====
+
+This function will log a string to the defined log file.
+
+Usage: logtext “This is a test”
+
+==== ReportException ====
+
+Use this function to trigger the exception message at the end of the scan, when an unexpected result occurred and you did not catch it with a normal “if” statement. For example: if you expect a test to exit with exit code 0 or 1 and it actually gave back “2”, then trigger the exception. This helps in debugging and monitoring for unexpected results.
+
+Usage: ReportException “${TEST_NO}:1” “Unexpected result from running command ps”
+
+==== ReportSuggestion ====
+
+Show a suggestion on screen (at the end) and store it in the report. Additional details might be added (see include/functions).
+
+Usage: ReportSuggestion “${TEST_NO}” “We suggest to install package X”
+
+==== ReportWarning ====
+
+Similar to ReportSuggestion, except that it shows the message in the warning box. Additional details might be added (see include/functions).
+
+Usage: ReportWarning "${TEST_NO" "We discovered a medium scored finding"
+
+==== Other functions ====
+
+There are more functions available. They are stored in include/functions, with a description. By searching for the related function in the existing tests, they provide many examples on how to use the function.
+
+===== GitHub =====
+
+Want to stay up-to-date, follow the project on GitHub: [[https://github.com/CISOfy/Lynis|Lynis]]

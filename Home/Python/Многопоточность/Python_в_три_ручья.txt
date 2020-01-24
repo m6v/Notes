@@ -1,0 +1,6 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2019-12-08T05:56:04+03:00
+
+====== Python в три ручья ======
+Создан Воскресенье 08 декабря 2019

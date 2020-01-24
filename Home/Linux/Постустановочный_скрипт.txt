@@ -1,0 +1,82 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-22T11:43:06+03:00
+
+====== Постустановочный скрипт ======
+Создан Среда 22 Январь 2020
+
+{{{code: lang="sh" linenumbers="False"
+#!/bin/bash
+#Добавляем сторонние репозитории
+repo=(ppa:notepadqq-team/notepadqq ppa:webupd8team/java)
+for item in ${repo[*]}
+do
+    echo "$item"
+    #add-apt-repository "$item"
+done
+sudo apt update
+
+apps=(wget curl htop mc net-tools unrar virtualbox hardinfo bleachbit terminator cmake cmake-gui geany \
+      openvpn notepadqq evolution fslint vlc deluge filezilla putty chromium-browser zim\
+      wireshark zenmap liferea keepass2 catfish cabextract winehq-stable docker hplip gimp \
+      gparted cutecom psutils pdftk oracle-java8-installer python3-pyqt5 pyqt5-dev alltray\
+      easystroke remina r-base deluged deluge-web partclone zim)
+
+for item in ${apps[*]}
+do
+    echo "$item"
+    #apt install -y "$item"
+done
+
+#Загружаем и устанавливаем *.deb пакеты, отсутствующие в репозиториях
+cd /tmp #каталог загрузки
+urls=(https://download.teamviewer.com/download/teamviewer_i386.deb \
+      http://download.xnview.com/XnViewMP-linux-x64.deb \
+      https://go.skype.com/skypeforlinux-64.deb \
+      https://download1.rstudio.org/rstudio-xenial-1.1.383-amd64.deb \
+	  https://www.r-tt.com/downloads/RLinux5_x64.deb)
+
+for item in ${urls[*]}
+do
+    echo "$item"
+    #wget "$item"
+    echo `basename $item`
+    #dpkg -i `basename $item`
+done
+
+#Загружаем и устанавливаем приложения, требующие индивидуальной становки
+wget https://www.truecrypt71a.com/dl/truecrypt-7.1a-linux-x64.tar.gz
+tar -xvzf truecrypt-7.1a-linux-x64.tar.gz
+sh truecrypt-7.1a-setup-x64
+
+wget http://www.bestofbi.com/downloads/architect/1.0.8/SQL-Power-Architect-generic-jdbc-1.0.8.tar.gz
+tar -xvzf architect-1.0.8.tar.gz -C /opt
+
+wget http://ftp-stud.fht-esslingen.de/pub/Mirrors/eclipse/technology/epp/downloads/release/oxygen/1a/eclipse-cpp-oxygen-1a-linux-gtk-x86_64.tar.gz
+tar -xvzf eclipse-cpp-oxygen-1a-linux-gtk-x86_64.tar.gz -C /opt
+
+wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
+chmod +x ./winetricks
+mv ./winetricks /opt/wine-stable/bin
+
+#Создаем 32-битный префикс
+WINEARCH=win32 WINEPREFIX=~/.wine32 winecfg
+#Устанавливаем библиотеки, необходимые для Microsoft Office + Visio
+WINEPREFIX=~/.wine32 winetricks msxml3 gdiplus riched20 riched30 vcrun2005sp1 corefonts dotnet20
+echo "export WINEPREFIX=~/.wine32" >> ~/.bashrc
+
+#Посмотреть по установке SoapUI
+wget https://b537910400b7ceac4df0-22e92613740a7dd1247910134033c0d1.ssl.cf5.rackcdn.com/soapui/5.3.0/SoapUI-x64-5.3.0.sh
+
+# Руссифицированные man-ы
+cd /tmp
+wget https://sourceforge.net/projects/man-pages-ru/files/man-pages-ru_5.03-2390-2390-20191017.tar.bz2
+tar -xvzf man-pages-ru_5.03-2390-2390-20191017.tar.bz2
+cd /man-pages-ru_5.03-2390-2390-20191017
+gzip -r ./* # Рекурсивная компрессия всех файлов
+tar -cf ru-backup.tar /usr/share/man/ru # Делаем резервную копию старых man-ов
+sudo cp -r ./* /usr/share/man/ru # Копируем (рекурсивно, с правами администратора) все файлы в /usr/share/man/ru (существующие файлы заменяются новыми)
+sudo chmod -R a+r /usr/share/man/ru # Разрешаем всем чтение man-ов
+
+}}}
+

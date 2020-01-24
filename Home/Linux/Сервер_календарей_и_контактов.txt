@@ -1,0 +1,13 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-23T12:01:48+03:00
+
+====== Сервер календарей и контактов ======
+Создан Четверг 23 Январь 2020
+
+см.:
+[[https://radicale.org/setup/|Basic Setup]]
+[[https://github.com/Kozea/Radicale/wiki/Simple-installation|Simple installation]]
+[[./Radicale-master.zip|Radicale-master]]
+
+[[./Настройка сервера календарей и контактов Davical.pdf|Настройка сервера календарей и контактов Davical]]

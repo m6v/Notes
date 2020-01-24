@@ -1,0 +1,7 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-23T11:03:12+03:00
+
+====== Astra Linux ======
+Создан Четверг 23 Январь 2020
+

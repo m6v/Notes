@@ -1,0 +1,11 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-03T10:40:31+03:00
+
+====== MachineLearning ======
+Создан Пятница 03 января 2020
+
+===== Литература =====
+
+[[https://foobar167.github.io/page/vvedeniye-v-mashinnoye-obucheniye-i-iskusstvennyye-neyronnyye-seti.html|Введение в машинное обучение и искусственные нейронные сети]]
+[[https://tuxdoc.com/downloadFile/scipyandnumpypdf_pdf|scipy_and_numpy]]

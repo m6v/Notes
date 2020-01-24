@@ -1,0 +1,52 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-01-18T11:27:15+03:00
+
+====== Получение имени пользователя C++ Linux ======
+Создан Суббота 18 января 2020
+
+===== Использование функции getenv =====
+
+{{{code: lang="cpp" linenumbers="False"
+std::getenv("USER")
+}}}
+
+
+===== Использование функции getpwuid =====
+
+Переменные $HOME и $USER можно легко подменить, поэтому их хорошо использовать в большинстве приложений, когда пользователю желательно предоставить такую возможность. Если этого необходимо избежать, например в suid-приложении, то лучше использовать напрямую Сишные системные/библиотечные вызовы: getuid () и getpwuid ().
+
+Функция getpwuid() возвращает указатель на структуру, содержащую поля строки из файла /etc/passwd для записи, совпадающей с идентификатором пользователя uid.
+
+Структура passwd определена в файле следующим образом:
+
+{{{code: lang="cpp" linenumbers="False"
+struct passwd {
+    char    *pw_name;       /* имя пользователя */
+    char    *pw_passwd;     /* хеш пароля пользователя */
+    uid_t   pw_uid;         /* id пользователя */
+    gid_t   pw_gid;         /* id группы */
+    char    *pw_gecos;      /* настоящее имя */
+    char    *pw_dir;        /* домашний каталог */
+    char    *pw_shell;      /* программа-оболочка */
+};
+}}}
+
+
+{{{code: lang="cpp" linenumbers="False"
+struct passwd *pwd = getpwuid(getuid());
+char *name = pwd->pw_name;
+char *dir = pwd->pw_dir;
+}}}
+
+
+
+===== Использование функции getlogin_r() =====
+
+Функция getlogin_r(), определенная в unistd.h, возвращает имя пользователя (см. man getlogin_r)
+
+{{{code: lang="cpp" linenumbers="False"
+int getlogin_r(char *buf, size_t bufsize);
+}}}
+
+
