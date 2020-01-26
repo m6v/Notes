@@ -9,5 +9,19 @@ Creation-Date: 2019-12-06T22:58:42+03:00
 $ git add -A # добавить новые и измененные файлы в индекс
 $ git commit -am "Changes backup..."
 # или
-git commit --amend -m "Changes backup..." # чтобы не плодить новые коммиты, но нужно проверить!
+$ git commit --amend -m "Changes backup..." # чтобы не плодить новые коммиты, но нужно проверить!
 $ git push origin master
+
+NB! Если коммитить с помощью  git commit --amend -m "Changes backup...", то получаем ошибку:
+
+'''
+To github.com:m6v/Notes.git
+ ! [rejected]        master -> master (non-fast-forward)
+error: не удалось отправить некоторые ссылки в «git@github.com:m6v/Notes.git»
+подсказка: Обновления были отклонены, так как верхушка вашей текущей ветки
+подсказка: позади ее внешней части. Заберите и слейте внешние изменения 
+подсказка: (например, с помощью «git pull …») перед повторной попыткой отправки
+подсказка: изменений.
+'''
+
+
