@@ -8,7 +8,7 @@ Creation-Date: 2019-12-06T22:58:42+03:00
 ===== Бэкап записной книжки на GitHub =====
 $ git add -A # добавить новые и измененные файлы в индекс
 $ git commit -am "Changes backup..."
-$ git commit --amend -m "Changes backup..." # чтобы не плодить новые коммиты, но нужно проверить!
+$ git commit --amend -m "Changes backup..." # чтобы не плодить новые коммиты можно делать так (требуется проверка)
 $ git push origin master
 
 NB! Если коммитить с помощью  git commit --amend -m "Changes backup...", то получаем ошибку:
@@ -23,4 +23,5 @@ error: не удалось отправить некоторые ссылки в
 подсказка: изменений.
 '''
 
-
+Исправляем с помощью команды
+$ git pull origin master

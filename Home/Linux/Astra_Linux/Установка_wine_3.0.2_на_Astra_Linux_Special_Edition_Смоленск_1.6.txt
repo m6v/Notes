@@ -15,7 +15,7 @@ Creation-Date: 2020-01-23T11:03:30+03:00
 Контрольная сумма:
 
 {{{code: lang="sh" linenumbers="False"
-gostsum wine-installer.run
+$ gostsum wine-installer.run
 }}}
 
 ''096efedda7344696f358f358b7bddc767d24da980607ede2d64612748bfb905a wine-installer.run''
@@ -23,12 +23,12 @@ gostsum wine-installer.run
 Затем выполнить:
 
 {{{code: lang="sh" linenumbers="False"
-chmod +x wine-installer.run
+$ chmod +x wine-installer.run
 }}}
 
 И установить wine:
 {{{code: lang="sh" linenumbers="False"
-sudo ./wine-installer.run
+$ sudo ./wine-installer.run
 }}}
 
 После установки выполнить:
@@ -44,38 +44,38 @@ DISPLAY=:0 /opt/wine-stable/bin/winecfg
 
 Для их установки выполнить следующие команды:
 {{{code: lang="sh" linenumbers="False"
-apt install ca-certificates
-wget https://mirror.yandex.ru/astra/current/orel/repository/pool/main/libm/libmspack/libmspack0_0.5-1%2Bdeb9u2_amd64.deb
-wget https://mirror.yandex.ru/astra/current/orel/repository/pool/main/c/cabextract/cabextract_1.6-1_amd64.deb
-sudo dpkg -i libmspack0_0.5-1+deb9u2_amd64.deb cabextract_1.6-1_amd64.deb
-sudo apt install zenity
+$ apt install ca-certificates
+$ wget https://mirror.yandex.ru/astra/current/orel/repository/pool/main/libm/libmspack/libmspack0_0.5-1%2Bdeb9u2_amd64.deb
+$ wget https://mirror.yandex.ru/astra/current/orel/repository/pool/main/c/cabextract/cabextract_1.6-1_amd64.deb
+$ sudo dpkg -i libmspack0_0.5-1+deb9u2_amd64.deb cabextract_1.6-1_amd64.deb
+$ sudo apt install zenity
 }}}
 
 Далее, скачать  winetricks
 {{{code: lang="sh" linenumbers="False"
-wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
+$ wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
 }}}
 
 Сделать его исполняемым
 {{{code: lang="sh" linenumbers="False"
-chmod +x winetricks
+$ chmod +x winetricks
 }}}
 
 Скопировать в /usr/bin
 {{{code: lang="sh" linenumbers="False"
-sudo cp winetricks /usr/bin
+$ sudo cp winetricks /usr/bin
 }}}
 
 Настроить линки на wine
 {{{code: lang="sh" linenumbers="False"
-sudo mkdir /usr/lib/wine
-sudo ln -s /opt/wine-stable/bin/wineserver /usr/lib/wine/wineserver
-sudo ln -s /opt/wine-stable/bin/wine /usr/bin/wine
+$ sudo mkdir /usr/lib/wine
+$ sudo ln -s /opt/wine-stable/bin/wineserver /usr/lib/wine/wineserver
+$ sudo ln -s /opt/wine-stable/bin/wine /usr/bin/wine
 }}}
 
 Запустить winetricks командой
 {{{code: lang="sh" linenumbers="False"
-winetricks
+$ winetricks
 }}}
 
 В появившемся окне выбрать: Выберите путь wine
