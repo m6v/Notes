@@ -5,8 +5,6 @@ Creation-Date: 2019-12-20T23:19:16+03:00
 ====== Установка wine в Ubuntu 18.04 ======
 Создан Пятница 20 декабря 2019
 
-
-
 $ sudo dpkg --add-architecture i386
 $ wget -nc https://dl.winehq.org/wine-builds/Release.key
 $ wget -nc https://dl.winehq.org/wine-builds/winehq.key
@@ -34,11 +32,9 @@ WINEPREFIX=~/.wine32 WINEARCH=win32 wineboot
 export WINEPREFIX="${HOME}/.wine32"
 
 ===== Установка winetriks =====
-
 см.: https://github.com/Winetricks/winetricks
 
 ===== Установка шрифтов =====
-
 winetricks -> Установить программу, OK, Установить шрифт, выбрать требуемый шрифт и нажать OK.
 
 NB! После apt update запускать winecfg!

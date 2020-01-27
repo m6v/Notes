@@ -13,7 +13,6 @@ sudo reboot
 
 
 ===== Raspbian Stretch Lite with XFCE4, set automatic login =====
-
 To set up XFCE4 Desktop I use:
 
 {{{code: lang="sh" linenumbers="False"

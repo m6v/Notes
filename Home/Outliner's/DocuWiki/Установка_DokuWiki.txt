@@ -33,7 +33,6 @@ Zend Engine v3.1.0, Copyright (c) 1998-2018 Zend Technologies
 
 
 ===== Step 2 - Install and configure Nginx =====
-
 **Install Nginx**
 
 {{{code: lang="sh" linenumbers="False"
@@ -137,7 +136,6 @@ systemctl status nginx.service
 
 
 ===== Step 3 - Install DokuWiki =====
-
 **Create a document root directory**
 
 {{{code: lang="sh" linenumbers="False"

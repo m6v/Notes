@@ -10,7 +10,6 @@ Creation-Date: 2020-01-16T18:31:24+03:00
 ssh-agent предназначен для управления SSH-ключами пользователя и их паролями, что бы не вводить пароль к ключу каждый раз при использовании.
 
 ==== Запуск агента ====
-
 {{{code: lang="sh" linenumbers="False"
 ssh-agent
 }}}
@@ -36,11 +35,9 @@ eval $(ssh-agent) > /dev/null
 
 
 ==== Примеры ====
-
 Рассмотрим базовые примеры использования ssh-agent.
 
 === Создание ключа ===
-
 Генерируем ключ:
 
 {{{code: lang="sh" linenumbers="False"
@@ -77,8 +74,8 @@ The key's randomart image is:
 	-C: комментарий к ключу (по-умолчанию будет username@hostname)
 	-P: пароль для доступа к ключу
 
-=== Проверка пароля ===
 
+=== Проверка пароля ===
 Что бы проверить пароль ключа — используем -f для указания ключа, и -y для вывода информации о ключе, поэтому запросит пароль:
 
 {{{code: lang="sh" linenumbers="False"
@@ -93,7 +90,6 @@ ssh-rsa AAAAB***gud2vedL/V Testing key
 
 
 === Смена пароля ===
-
 Что бы изменить пароль, заня старый:
 
 {{{code: lang="sh" linenumbers="False"
@@ -111,7 +107,6 @@ Your identification has been saved with the new passphrase.
 
 
 === ssh-copy-id — копирование ключа на сервер ===
-
 Скопировать ключ можно вручную, получив его публичную часть:
 
 {{{code: lang="sh" linenumbers="False"
@@ -157,7 +152,6 @@ setevoy@rtfm-do-production:~$
 
 
 === ssh-add ===
-
 Окей, теперь у нас ключ для аутентификации на сервере, и ключ закрыт паролем.
 
 При каждом обращении к серверу — нам придётся вводить пароль заново — Enter passphrase for key ‘/home/setevoy/.ssh/test-key’.
@@ -179,7 +173,6 @@ setevoy     1324  0.0  0.0   5796  2160 ?        Ss   Nov30   0:00 ssh-agent -s
 
 
 === Could not open a connection to your authentication agent ===
-
 Самая частая ошибка при  использовании агента — когда к нему невозможно подключиться, и ssh-add сообщает:
 
 {{{code: lang="sh" linenumbers="False"
@@ -239,7 +232,6 @@ ssh-add -l
 Тут всё готово.
 
 === Добавление ключа ===
-
 Выполняем:
 
 {{{code: lang="sh" linenumbers="False"
@@ -254,7 +246,6 @@ Identity added: /home/setevoy/.ssh/test-key (Testing key)
 
 
 === Проверка ключей в агенте ===
-
 Проверяем загруженные в агент ключи, используя -l:
 
 {{{code: lang="sh" linenumbers="False"
@@ -266,7 +257,6 @@ ssh-add -l
 
 
 === Удаление ключа ===
-
 Используем -d для удаления одного ключа:
 
 {{{code: lang="sh" linenumbers="False"
@@ -287,7 +277,6 @@ ssh-add -D
 
 
 === Автоматическое добавление в ssh-agent ===
-
 Что бы ssh (и git, например) всегда добавляли ключ в ssh-agent без явного ручного вызова ssh-add — добавьте AddKeysToAgent в ~/.ssh/config, указав yes, confirm или ask (см. SSH_ASKPASS):
 
 {{{code: lang="sh" linenumbers="False"
@@ -350,7 +339,6 @@ setevoy@rtfm-do-production:~$
 
 
 ==== Запуск ssh-agent и несколько консолей ====
-
 Одна из основных проблем, это то, что при запуске новой вкладки в Konsole и инициализации новой bash-сесии — там не будет переменной $SSH_AUTH_SOCK, и ssh-клиент не сможет получить доступ к ключу.
 
 Например, при вызове ssh-add в новом терминале получим уже упомянутую ошибку «Could not open a connection to your authentication agent«:
@@ -364,7 +352,6 @@ ssh-add -l
 
 
 === ~/.bashrc ===
-
 Вариантов много, например самый простой — добавить в [[~/.bashrc:]]
 
 	if [ -z "$SSH_AUTH_SOCK" ] ; then
@@ -404,7 +391,6 @@ ssh-add -l
 Более-менее вариант, т.к. во всех сессиях у нас будет использоваться один и тот же агент (хотя некоторые рекомендуют использовать различных агентов для разных пулов ключей, например для личных ключей — один агент, для рабочих — другой).
 
 === systemd ===
-
 Ещё один вариант — создать systemd unit-файл и запускать ssh-agent как сервис
 Добавляем каталог, если не создан:
 
@@ -515,7 +501,6 @@ Created symlink /home/setevoy/.config/systemd/user/default.target.wants/ssh-agen
 
 
 === ~/.xinitrc ===
-
 Ещё один вариант — запускать из ~/.xinitrc.
 
 В таком случае, при вызове startx (как у меня, когда login manager нет, и X.Org запускается вручную, через вызов startx в консоли) будет запущен агент, а затем — Openbox

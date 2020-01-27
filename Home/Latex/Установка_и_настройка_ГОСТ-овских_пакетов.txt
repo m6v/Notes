@@ -7,7 +7,6 @@ Creation-Date: 2019-12-25T09:27:19+03:00
 
 
 ===== Установка eskdx-xelatex =====
-
 {{{code: lang="sh" linenumbers="False"
 $ sudo apt install git
 $ git clone https://github.com/einhander/eskdx-xelatex
@@ -23,7 +22,6 @@ $ xelatex document.tex # Файл должен скомпилироваться 
 TODO: Разобраться куда правильно скопировать стилевые файлы, чтобы были доступны для всех пользователей! Скорее всего в /usr/share/texmf/xelatex/имя_пакета/имя_пакета.sty
 
 ===== Установка eskdi =====
-
 Стилевые файлы для TeX Live, позволяющие создавать текстовые документы согласно ЕСКД
 
 {{{code: lang="sh" linenumbers="False"
@@ -58,7 +56,6 @@ $ xelatex about.tex # во второй проход добавляем соде
 
 
 ===== Установка Kile =====
-
 {{{code: lang="sh" linenumbers="False"
 $ apt install kile # 270МБ после установки
 }}}
@@ -66,7 +63,6 @@ $ apt install kile # 270МБ после установки
 в Settings->Configure Kile->Tools->Build->ViewPDF в поле Command прописать программу просмотра *.pdf
 
 ===== Установка latex-uspd =====
-
 Стилевые файлы для TeX Live, позволяющие создавать текстовые документы согласно ЕСПД
 
 {{{code: lang="sh" linenumbers="False"
@@ -111,7 +107,6 @@ TODO: сделать нормальные разделы с нумерацией
 
 
 ===== Установка eskdx =====
-
 см.: [[../Коллекция ESKDX V0.98. Руководство пользователя.pdf|Коллекция ESKDX V0.98. Руководство пользователя]]
 
 {{{code: lang="sh" linenumbers="False"
@@ -163,7 +158,6 @@ l.9 \begin{document}
 
 
 ===== Установка TeXlipse plugin в Eclipse =====
-
 Help->Install New Software
 
 http://texlipse.sourceforge.net

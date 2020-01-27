@@ -52,7 +52,6 @@ tlmgr: no updates available
 
 
 ===== Adding a new package to a latex install on linux =====
-
 If you want to install a custom TeX package that is not already in Debian's repositories, take a look at CTAN's web site or TeX Catalogue Online.
 
 Download the package and extract it with tar -xvf foo.tar.gz.
@@ -67,7 +66,6 @@ $ latex foo.ins
 This generates foo.sty. Now you have to copy it to the system LaTeX tree or your personal tree. After installation, you can use the new package by inserting \usepackage{foo} in the beginning of the document.
 
 ==== User install ====
-
 This method creates a personal texmf tree to your home folder. The files are installed only to the original user.
 
 Create the directory structure:
@@ -85,7 +83,6 @@ $ texhash ~/texmf
 
 
 ==== System install ====
-
 This method installs the package in the LaTeX system tree. The new package is available to all users.
 
 Create a new directory as root

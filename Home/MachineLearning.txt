@@ -9,3 +9,10 @@ Creation-Date: 2020-01-03T10:40:31+03:00
 
 [[https://foobar167.github.io/page/vvedeniye-v-mashinnoye-obucheniye-i-iskusstvennyye-neyronnyye-seti.html|Введение в машинное обучение и искусственные нейронные сети]]
 [[https://tuxdoc.com/downloadFile/scipyandnumpypdf_pdf|scipy_and_numpy]]
+
+===== Tidying Data =====
+[[./Grolemund - Data Tidying.pdf|Grolemund - Data Tidying]]
+[[./Tidy data (перевод).pdf|Tidy data (перевод)]]
+[[./Wickman - Tidy Data.pdf|Wickman - Tidy Data]]
+[[./Jonge - An introduction to data cleaning with R.pdf|Jonge - An introduction to data cleaning with R]]
+[[./Hould - Tidying Data in Python.pdf|Hould - Tidying Data in Python]]

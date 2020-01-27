@@ -8,7 +8,6 @@ Creation-Date: 2019-12-06T22:58:42+03:00
 ===== Бэкап записной книжки на GitHub =====
 $ git add -A # добавить новые и измененные файлы в индекс
 $ git commit -am "Changes backup..."
-# или
 $ git commit --amend -m "Changes backup..." # чтобы не плодить новые коммиты, но нужно проверить!
 $ git push origin master
 
